@@ -26,9 +26,6 @@
     "plugins": [
       "expo-font",
       "expo-splash-screen"
-    ],
-    "experiments": {
-      "baseUrl": "/Givit"
-    }
+    ]
   }
 }
