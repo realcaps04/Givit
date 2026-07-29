@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet } from 'react-native';
+import { Animated, Easing, Platform, StyleSheet } from 'react-native';
 import Svg, { Path, G, Rect } from 'react-native-svg';
 
 type GiftLogoProps = {
@@ -8,6 +8,7 @@ type GiftLogoProps = {
 
 const BLUE = '#004CFF';
 const BLUE_SOFT = 'rgba(0, 76, 255, 0.45)';
+const useNative = Platform.OS !== 'web';
 
 /** Soft circular badge + gift icon with a calm entrance + float */
 export function GiftLogo({ size = 134 }: GiftLogoProps) {
@@ -20,7 +21,7 @@ export function GiftLogo({ size = 134 }: GiftLogoProps) {
       toValue: 1,
       duration: 700,
       easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
+      useNativeDriver: useNative,
     }).start();
 
     const loop = Animated.loop(
@@ -29,13 +30,13 @@ export function GiftLogo({ size = 134 }: GiftLogoProps) {
           toValue: 1,
           duration: 2800,
           easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
+          useNativeDriver: useNative,
         }),
         Animated.timing(float, {
           toValue: 0,
           duration: 2800,
           easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
+          useNativeDriver: useNative,
         }),
       ]),
     );
@@ -99,10 +100,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.08,
-    shadowRadius: 22,
-    elevation: 8,
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 12px 28px rgba(0,0,0,0.08)' } as object)
+      : {
+          shadowColor: '#000000',
+          shadowOffset: { width: 0, height: 12 },
+          shadowOpacity: 0.08,
+          shadowRadius: 22,
+          elevation: 8,
+        }),
   },
 });
