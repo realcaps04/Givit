@@ -138,14 +138,49 @@ function BackgroundBlobs() {
 }
 
 function isValidEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+  const v = value.trim();
+  if (!v || v.length > 254) return false;
+  // Practical email pattern: local@domain.tld (no spaces)
+  return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(
+    v,
+  );
+}
+
+function validateEmail(value: string) {
+  const v = value.trim();
+  if (!v) return 'Email is required';
+  if (/\s/.test(value)) return 'Email cannot contain spaces';
+  if (!v.includes('@')) return 'Email must include @';
+  if (!isValidEmail(v)) return 'Enter a valid email address';
+  return undefined;
 }
 
 function validatePassword(value: string) {
   if (!value) return 'Password is required';
   if (value.length < 8) return 'Use at least 8 characters';
+  if (value.length > 64) return 'Password is too long';
   if (!/[A-Za-z]/.test(value)) return 'Include at least one letter';
   if (!/[0-9]/.test(value)) return 'Include at least one number';
+  if (/\s/.test(value)) return 'Password cannot contain spaces';
+  return undefined;
+}
+
+function validateConfirmPassword(password: string, confirm: string) {
+  if (!confirm) return 'Confirm your password';
+  if (confirm !== password) return 'Passwords do not match';
+  return undefined;
+}
+
+function validatePhone(digits: string, country: Country) {
+  if (!digits) return 'Phone number is required';
+  if (!/^\d+$/.test(digits)) return 'Phone number must be digits only';
+  if (digits.length !== country.phoneLength) {
+    return `Enter a ${country.phoneLength}-digit ${country.name} number`;
+  }
+  // India mobiles start with 6–9
+  if (country.code === 'IN' && !/^[6-9]/.test(digits)) {
+    return 'Enter a valid Indian mobile number';
+  }
   return undefined;
 }
 
@@ -188,20 +223,17 @@ export function CreateAccountScreen({
     const ct = next?.country ?? country;
     const nextErrors: FieldErrors = {};
 
-    if (!e.trim()) nextErrors.email = 'Email is required';
-    else if (!isValidEmail(e)) nextErrors.email = 'Enter a valid email address';
+    const emailError = validateEmail(e);
+    if (emailError) nextErrors.email = emailError;
 
     const passwordError = validatePassword(p);
     if (passwordError) nextErrors.password = passwordError;
 
-    if (!c) nextErrors.confirmPassword = 'Confirm your password';
-    else if (c !== p) nextErrors.confirmPassword = 'Passwords do not match';
+    const confirmError = validateConfirmPassword(p, c);
+    if (confirmError) nextErrors.confirmPassword = confirmError;
 
-    const digits = ph.replace(/\D/g, '');
-    if (!digits) nextErrors.phone = 'Phone number is required';
-    else if (digits.length !== ct.phoneLength) {
-      nextErrors.phone = `Enter a ${ct.phoneLength}-digit ${ct.name} number`;
-    }
+    const phoneError = validatePhone(ph.replace(/\D/g, ''), ct);
+    if (phoneError) nextErrors.phone = phoneError;
 
     return nextErrors;
   };
@@ -215,8 +247,10 @@ export function CreateAccountScreen({
   };
 
   const onChangeEmail = (value: string) => {
-    setEmail(value);
-    if (touched.email) setErrors(runValidation({ email: value }));
+    // Keep email-only characters; strip spaces as user types
+    const cleaned = value.replace(/\s/g, '');
+    setEmail(cleaned);
+    if (touched.email) setErrors(runValidation({ email: cleaned }));
   };
 
   const onChangePassword = (value: string) => {
@@ -303,9 +337,20 @@ export function CreateAccountScreen({
               placeholder="Email"
               placeholderTextColor={PLACEHOLDER}
               keyboardType="email-address"
+              inputMode="email"
+              textContentType="emailAddress"
               autoCapitalize="none"
+              autoCorrect={false}
               autoComplete="email"
+              importantForAutofill="yes"
               underlineColorAndroid="transparent"
+              {...(Platform.OS === 'web'
+                ? ({
+                    // Force native <input type="email"> on web
+                    type: 'email',
+                    enterKeyHint: 'next',
+                  } as object)
+                : null)}
               style={[styles.field, showError('email') ? styles.fieldError : null]}
             />
             {showError('email') ? <Text style={styles.errorText}>{showError('email')}</Text> : null}
