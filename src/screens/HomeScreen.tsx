@@ -26,6 +26,7 @@ import {
 } from '../components/CategoryIllustrations';
 import { TransitionHost, type TransitionDirection } from '../components/ScreenTransition';
 import { ProductDetailScreen, type DetailProduct } from './ProductDetailScreen';
+import { CheckoutScreen, type CheckoutItem } from './CheckoutScreen';
 
 const BLUE = '#004CFF';
 const BLUE_SOFT = 'rgba(0, 76, 255, 0.10)';
@@ -43,7 +44,6 @@ const CATEGORY_CARDS: {
   id: CategoryIllustrationId;
   title: string;
   tagline: string;
-  count: string;
   colors: readonly [string, string, string];
   glow: string;
 }[] = [
@@ -51,7 +51,6 @@ const CATEGORY_CARDS: {
     id: 'tech',
     title: 'Tech',
     tagline: 'Smart gifts that impress',
-    count: '48 curated',
     colors: ['#F5F8FC', '#EEF3FA', '#FFFFFF'],
     glow: 'rgba(0, 76, 255, 0.10)',
   },
@@ -59,7 +58,6 @@ const CATEGORY_CARDS: {
     id: 'fashion',
     title: 'Fashion',
     tagline: 'Style they’ll love to wear',
-    count: '36 curated',
     colors: ['#F4F9F6', '#EAF4EF', '#FFFFFF'],
     glow: 'rgba(45, 122, 90, 0.10)',
   },
@@ -67,7 +65,6 @@ const CATEGORY_CARDS: {
     id: 'flowers',
     title: 'Flowers',
     tagline: 'Blooms for every moment',
-    count: '24 curated',
     colors: ['#FAF5F7', '#F4EBEE', '#FFFFFF'],
     glow: 'rgba(180, 100, 130, 0.10)',
   },
@@ -75,7 +72,6 @@ const CATEGORY_CARDS: {
     id: 'plants',
     title: 'Plants',
     tagline: 'Green gifts that grow',
-    count: '18 curated',
     colors: ['#F4F8F5', '#EAF2EC', '#FFFFFF'],
     glow: 'rgba(70, 130, 90, 0.10)',
   },
@@ -83,7 +79,6 @@ const CATEGORY_CARDS: {
     id: 'gourmet',
     title: 'Gourmet',
     tagline: 'Treats worth celebrating',
-    count: '32 curated',
     colors: ['#FAF7F3', '#F3ECE4', '#FFFFFF'],
     glow: 'rgba(160, 110, 70, 0.10)',
   },
@@ -91,7 +86,6 @@ const CATEGORY_CARDS: {
     id: 'kids',
     title: 'Kids',
     tagline: 'Playful joy for little ones',
-    count: '28 curated',
     colors: ['#F6F4FA', '#EEEAF5', '#FFFFFF'],
     glow: 'rgba(110, 90, 180, 0.10)',
   },
@@ -99,7 +93,6 @@ const CATEGORY_CARDS: {
     id: 'gifts',
     title: 'Gifts',
     tagline: 'Signature Givit picks',
-    count: '60 curated',
     colors: ['#F3F6FC', '#E8EEF8', '#FFFFFF'],
     glow: 'rgba(0, 76, 255, 0.12)',
   },
@@ -497,10 +490,16 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
   const [searchOpen, setSearchOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [cartCount, setCartCount] = useState(0);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [cartItems, setCartItems] = useState<CheckoutItem[]>([]);
   const inputRef = useRef<TextInputType>(null);
   const iconPulse = useRef(new Animated.Value(1)).current;
   const switchingRef = useRef(false);
+
+  const cartCount = useMemo(
+    () => cartItems.reduce((sum, item) => sum + item.qty, 0),
+    [cartItems],
+  );
 
   const switchTab = (next: TabKey) => {
     if (next === tab || searchOpen || switchingRef.current) return;
@@ -522,14 +521,32 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
     setSelectedProduct(product);
   };
 
-  const addToCart = (title?: string) => {
-    setCartCount((n) => n + 1);
-    Alert.alert('Added to cart', title ? `${title} added to your cart.` : 'Item added to your cart.');
-  };
-
-  const buyNow = () => {
-    setCartCount((n) => n + 1);
-    Alert.alert('Buy Now', 'Checkout flow coming next.');
+  const addToCart = (product?: Product | string) => {
+    const resolved =
+      typeof product === 'string'
+        ? ALL_PRODUCTS.find((p) => p.title === product)
+        : product;
+    if (!resolved) {
+      Alert.alert('Added to cart', 'Item added to your cart.');
+      return;
+    }
+    setCartItems((prev) => {
+      const existing = prev.find((i) => i.id === resolved.id);
+      if (existing) {
+        return prev.map((i) => (i.id === resolved.id ? { ...i, qty: i.qty + 1 } : i));
+      }
+      return [
+        ...prev,
+        {
+          id: resolved.id,
+          title: resolved.title,
+          price: resolved.price ?? '₹ —',
+          image: resolved.image,
+          qty: 1,
+        },
+      ];
+    });
+    Alert.alert('Added to cart', `${resolved.title} added to your cart.`);
   };
 
   const filteredSuggestions = useMemo(() => {
@@ -588,6 +605,26 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
     closeSearch();
   };
 
+  const buyNow = () => {
+    if (selectedProduct) addToCart(selectedProduct);
+    setSelectedProduct(null);
+    setCartOpen(true);
+  };
+
+  if (cartOpen) {
+    return (
+      <CheckoutScreen
+        items={cartItems}
+        onBack={() => setCartOpen(false)}
+        onFinalize={() => {
+          Alert.alert('Order placed', 'Thanks! Your Givit order is confirmed.');
+          setCartItems([]);
+          setCartOpen(false);
+        }}
+      />
+    );
+  }
+
   if (selectedProduct) {
     return (
       <ProductDetailScreen
@@ -597,7 +634,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
         onBack={() => setSelectedProduct(null)}
         onToggleFavorite={() => toggleFavorite(selectedProduct.id)}
         onShare={() => Alert.alert('Share', 'Sharing coming soon.')}
-        onAddToCart={() => addToCart(selectedProduct.title)}
+        onAddToCart={() => addToCart(selectedProduct)}
         onBuyNow={buyNow}
         onOpenRelated={(productId) => {
           const next = ALL_PRODUCTS.find((p) => p.id === productId);
@@ -634,12 +671,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                     style={styles.cartBtn}
                     accessibilityRole="button"
                     accessibilityLabel="Cart"
-                    onPress={() =>
-                      Alert.alert(
-                        'Cart',
-                        cartCount ? `${cartCount} item(s) in cart` : 'Your cart is empty',
-                      )
-                    }
+                    onPress={() => setCartOpen(true)}
                   >
                     <CartIcon />
                     {cartCount > 0 ? (
@@ -727,7 +759,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                       </Text>
                       <VerifiedBadge />
                     </View>
-                    <PriceCartPill price={item.price ?? '₹ —'} onAdd={() => addToCart(item.title)} />
+                    <PriceCartPill price={item.price ?? '₹ —'} onAdd={() => addToCart(item)} />
                     {item.freeShip ? <Text style={styles.freeShip}>Free shipping</Text> : null}
                   </Pressable>
                 ))}
@@ -769,7 +801,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                     <PriceCartPill
                       price={item.price ?? '₹ —'}
                       compact
-                      onAdd={() => addToCart(item.title)}
+                      onAdd={() => addToCart(item)}
                     />
                     {item.freeShip ? <Text style={styles.freeShip}>Free shipping</Text> : null}
                   </Pressable>
@@ -803,7 +835,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                     <PriceCartPill
                       price={item.price ?? '₹ —'}
                       compact
-                      onAdd={() => addToCart(item.title)}
+                      onAdd={() => addToCart(item)}
                     />
                     {item.freeShip ? <Text style={styles.freeShip}>Free shipping</Text> : null}
                   </Pressable>
@@ -847,7 +879,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                         ALL_PRODUCTS.find((p) => p.title === item.title && p.price)?.price ?? '₹ —'
                       }
                       compact
-                      onAdd={() => addToCart(item.title)}
+                      onAdd={() => addToCart(item)}
                     />
                   </Pressable>
                 ))}
@@ -898,7 +930,6 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                       >
                         <View style={[styles.categoryGlow, { backgroundColor: item.glow }]} />
                         <View style={styles.categoryCopy}>
-                          <Text style={styles.categoryCount}>{item.count}</Text>
                           <Text style={styles.categoryHeroTitle}>{item.title}</Text>
                           <Text style={styles.categoryTagline}>{item.tagline}</Text>
                           <View style={styles.categoryCta}>
@@ -984,7 +1015,12 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                   underlineColorAndroid="transparent"
                   returnKeyType="search"
                   {...(Platform.OS === 'web'
-                    ? ({ outlineStyle: 'none', outlineWidth: 0 } as object)
+                    ? ({
+                        outlineStyle: 'none',
+                        outlineWidth: 0,
+                        outlineColor: 'transparent',
+                        boxShadow: 'none',
+                      } as object)
                     : null)}
                 />
               </View>
@@ -1000,6 +1036,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
               style={styles.suggestList}
+              contentContainerStyle={styles.suggestListContent}
             >
               {filteredSuggestions.map((item) => (
                 <Pressable
@@ -1070,10 +1107,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     gap: 8,
     overflow: 'hidden',
+    borderWidth: 0,
   },
   searchWrapExpanded: {
     flex: 1,
     width: undefined,
+    borderWidth: 0,
   },
   searchIconBtn: {
     width: 28,
@@ -1088,6 +1127,8 @@ const styles = StyleSheet.create({
     color: TEXT,
     padding: 0,
     minWidth: 0,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
   },
   placeholderText: {
     flex: 1,
@@ -1313,21 +1354,10 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
   },
   searchSheet: {
+    flex: 1,
     backgroundColor: '#FFFFFF',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
     paddingHorizontal: 18,
     paddingBottom: 16,
-    maxHeight: '72%',
-    ...(Platform.OS === 'web'
-      ? ({ boxShadow: '0 16px 40px rgba(0,0,0,0.12)' } as object)
-      : {
-          shadowColor: '#000',
-          shadowOpacity: 0.12,
-          shadowRadius: 20,
-          shadowOffset: { width: 0, height: 10 },
-          elevation: 8,
-        }),
   },
   suggestHeading: {
     fontFamily: fonts.semiBold,
@@ -1337,7 +1367,11 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   suggestList: {
-    maxHeight: 320,
+    flex: 1,
+  },
+  suggestListContent: {
+    paddingBottom: 24,
+    flexGrow: 1,
   },
   suggestRow: {
     flexDirection: 'row',
