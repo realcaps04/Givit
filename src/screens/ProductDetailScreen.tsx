@@ -65,12 +65,16 @@ export type DetailProduct = {
 type ProductDetailScreenProps = {
   product: DetailProduct;
   favorited?: boolean;
+  inCart?: boolean;
+  cartIds?: Set<string>;
   onBack: () => void;
   onToggleFavorite: () => void;
   onShare?: () => void;
   onAddToCart: () => void;
+  onGoToCart?: () => void;
   onBuyNow: () => void;
   onOpenRelated?: (productId: string) => void;
+  onAddRelatedToCart?: (productId: string) => void;
 };
 
 function BackIcon() {
@@ -102,6 +106,46 @@ function ShareIcon() {
       <Circle cx="6" cy="12" r="2.5" stroke={TEXT} strokeWidth={1.7} />
       <Circle cx="18" cy="19" r="2.5" stroke={TEXT} strokeWidth={1.7} />
       <Path d="M8.3 11l7.4-5M8.3 13l7.4 5" stroke={TEXT} strokeWidth={1.7} />
+    </Svg>
+  );
+}
+
+function RelatedCartIcon({ added = false }: { added?: boolean }) {
+  const color = '#FFFFFF';
+  if (added) {
+    return (
+      <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+        <Path
+          d="M4 6h2l1.2 9.2a2 2 0 0 0 2 1.8h7.4a2 2 0 0 0 2-1.6L20 8H7"
+          stroke={color}
+          strokeWidth={1.8}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <Circle cx="10" cy="20" r="1.3" fill={color} />
+        <Circle cx="17" cy="20" r="1.3" fill={color} />
+        <Path
+          d="M9.2 12.2l2 2 3.8-4"
+          stroke={color}
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </Svg>
+    );
+  }
+  return (
+    <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M4 6h2l1.2 9.2a2 2 0 0 0 2 1.8h7.4a2 2 0 0 0 2-1.6L20 8H7"
+        stroke={color}
+        strokeWidth={1.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path d="M10.5 12.5h5" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+      <Circle cx="10" cy="20" r="1.3" fill={color} />
+      <Circle cx="17" cy="20" r="1.3" fill={color} />
     </Svg>
   );
 }
@@ -347,12 +391,16 @@ function ReviewBubbleSection({
 export function ProductDetailScreen({
   product,
   favorited = false,
+  inCart = false,
+  cartIds,
   onBack,
   onToggleFavorite,
   onShare,
   onAddToCart,
+  onGoToCart,
   onBuyNow,
   onOpenRelated,
+  onAddRelatedToCart,
 }: ProductDetailScreenProps) {
   const insets = useSafeAreaInsets();
   const gallery = useMemo(
@@ -595,29 +643,56 @@ export function ProductDetailScreen({
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.relatedRow}
             >
-              {product.related.map((item) => (
-                <Pressable
-                  key={item.id}
-                  onPress={() => onOpenRelated?.(item.id)}
-                  style={({ pressed }) => [styles.relatedCard, pressed && styles.pressed]}
-                >
-                  <Image source={item.image} style={styles.relatedImg} resizeMode="cover" />
-                  <Text style={styles.relatedName} numberOfLines={2}>
-                    {item.title}
-                  </Text>
-                  <Text style={styles.relatedPrice}>{item.price}</Text>
-                </Pressable>
-              ))}
+              {product.related.map((item) => {
+                const relatedInCart = cartIds?.has(item.id) ?? false;
+                return (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => onOpenRelated?.(item.id)}
+                    style={({ pressed }) => [styles.relatedCard, pressed && styles.pressed]}
+                  >
+                    <View style={styles.relatedImgWrap}>
+                      <Image source={item.image} style={styles.relatedImg} resizeMode="cover" />
+                      <Pressable
+                        onPress={(e) => {
+                          if (typeof (e as { stopPropagation?: () => void }).stopPropagation === 'function') {
+                            (e as { stopPropagation: () => void }).stopPropagation();
+                          }
+                          onAddRelatedToCart?.(item.id);
+                        }}
+                        hitSlop={6}
+                        accessibilityRole="button"
+                        accessibilityLabel={relatedInCart ? 'Added to cart' : 'Add to cart'}
+                        style={({ pressed }) => [
+                          styles.relatedCartBtn,
+                          relatedInCart && styles.relatedCartBtnAdded,
+                          pressed && styles.pressed,
+                        ]}
+                      >
+                        <RelatedCartIcon added={relatedInCart} />
+                      </Pressable>
+                    </View>
+                    <Text style={styles.relatedName} numberOfLines={2}>
+                      {item.title}
+                    </Text>
+                    <Text style={styles.relatedPrice}>{item.price}</Text>
+                  </Pressable>
+                );
+              })}
             </ScrollView>
           </View>
         ) : null}
 
         <View style={styles.actions}>
           <Pressable
-            onPress={onAddToCart}
-            style={({ pressed }) => [styles.cartBtn, pressed && styles.pressed]}
+            onPress={inCart ? onGoToCart : onAddToCart}
+            style={({ pressed }) => [
+              styles.cartBtn,
+              inCart && styles.cartBtnInCart,
+              pressed && styles.pressed,
+            ]}
           >
-            <Text style={styles.cartLabel}>Add to Cart</Text>
+            <Text style={styles.cartLabel}>{inCart ? 'Go to Cart' : 'Add to Cart'}</Text>
           </Pressable>
           <Pressable
             onPress={onBuyNow}
@@ -847,12 +922,29 @@ const styles = StyleSheet.create({
     backgroundColor: FIELD,
     padding: 8,
   },
+  relatedImgWrap: {
+    position: 'relative',
+    marginBottom: 8,
+  },
   relatedImg: {
     width: '100%',
     height: 100,
     borderRadius: 12,
     backgroundColor: '#E8E8EE',
-    marginBottom: 8,
+  },
+  relatedCartBtn: {
+    position: 'absolute',
+    right: 6,
+    bottom: 6,
+    width: 28,
+    height: 28,
+    borderRadius: 9,
+    backgroundColor: BLUE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  relatedCartBtnAdded: {
+    backgroundColor: '#0F9D58',
   },
   relatedName: {
     fontFamily: fonts.medium,
@@ -876,6 +968,9 @@ const styles = StyleSheet.create({
     backgroundColor: TEXT,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  cartBtnInCart: {
+    backgroundColor: BLUE,
   },
   cartLabel: {
     fontFamily: fonts.semiBold,

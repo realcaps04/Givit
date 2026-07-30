@@ -619,7 +619,29 @@ function ProductImage({ source, style }: { source: ImageSourcePropType; style?: 
   return <Image source={source} style={[styles.productImg, style]} resizeMode="cover" />;
 }
 
-function CartMiniIcon({ color = '#FFFFFF' }: { color?: string }) {
+function CartMiniIcon({ color = '#FFFFFF', added = false }: { color?: string; added?: boolean }) {
+  if (added) {
+    return (
+      <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+        <Path
+          d="M4 6h2l1.2 9.2a2 2 0 0 0 2 1.8h7.4a2 2 0 0 0 2-1.6L20 8H7"
+          stroke={color}
+          strokeWidth={1.8}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <Circle cx="10" cy="20" r="1.3" fill={color} />
+        <Circle cx="17" cy="20" r="1.3" fill={color} />
+        <Path
+          d="M9.2 12.2l2 2 3.8-4"
+          stroke={color}
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </Svg>
+    );
+  }
   return (
     <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
       <Path
@@ -716,10 +738,12 @@ function FavButton({
 function PriceCartPill({
   price,
   compact,
+  inCart,
   onAdd,
 }: {
   price: string;
   compact?: boolean;
+  inCart?: boolean;
   onAdd: () => void;
 }) {
   return (
@@ -740,10 +764,14 @@ function PriceCartPill({
           onAdd();
         }}
         accessibilityRole="button"
-        accessibilityLabel="Add to cart"
-        style={({ pressed }) => [styles.pricePillCart, pressed && styles.pressed]}
+        accessibilityLabel={inCart ? 'Added to cart' : 'Add to cart'}
+        style={({ pressed }) => [
+          styles.pricePillCart,
+          inCart && styles.pricePillCartAdded,
+          pressed && styles.pressed,
+        ]}
       >
-        <CartMiniIcon />
+        <CartMiniIcon added={!!inCart} />
       </Pressable>
     </View>
   );
@@ -895,6 +923,8 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
     [cartItems],
   );
 
+  const cartIdSet = useMemo(() => new Set(cartItems.map((i) => i.id)), [cartItems]);
+
   const featuredItems = useMemo(() => {
     const fromFeatured = FEATURED.filter((p) => p.categories.includes(category));
     if (fromFeatured.length >= 2) return fromFeatured;
@@ -965,10 +995,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
       typeof product === 'string'
         ? ALL_PRODUCTS.find((p) => p.title === product)
         : product;
-    if (!resolved) {
-      Alert.alert('Added to cart', 'Item added to your cart.');
-      return;
-    }
+    if (!resolved) return;
     setCartItems((prev) => {
       const existing = prev.find((i) => i.id === resolved.id);
       if (existing) {
@@ -985,7 +1012,6 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
         },
       ];
     });
-    Alert.alert('Added to cart', `${resolved.title} added to your cart.`);
   };
 
   const filteredSuggestions = useMemo(() => {
@@ -1055,6 +1081,12 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
       <CheckoutScreen
         items={cartItems}
         onBack={() => setCartOpen(false)}
+        onRemoveItem={(id) => setCartItems((prev) => prev.filter((i) => i.id !== id))}
+        onChangeQty={(id, qty) =>
+          setCartItems((prev) =>
+            prev.map((i) => (i.id === id ? { ...i, qty: Math.max(1, qty) } : i)),
+          )
+        }
         onFinalize={() => {
           Alert.alert('Order placed', 'Thanks! Your Givit order is confirmed.');
           setCartItems([]);
@@ -1070,14 +1102,24 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
         key={selectedProduct.id}
         product={toDetailProduct(selectedProduct)}
         favorited={!!favorites[selectedProduct.id]}
+        inCart={cartIdSet.has(selectedProduct.id)}
+        cartIds={cartIdSet}
         onBack={() => setSelectedProduct(null)}
         onToggleFavorite={() => toggleFavorite(selectedProduct.id)}
         onShare={() => Alert.alert('Share', 'Sharing coming soon.')}
         onAddToCart={() => addToCart(selectedProduct)}
+        onGoToCart={() => {
+          setSelectedProduct(null);
+          setCartOpen(true);
+        }}
         onBuyNow={buyNow}
         onOpenRelated={(productId) => {
           const next = ALL_PRODUCTS.find((p) => p.id === productId);
           if (next) setSelectedProduct(next);
+        }}
+        onAddRelatedToCart={(productId) => {
+          const next = ALL_PRODUCTS.find((p) => p.id === productId);
+          if (next) addToCart(next);
         }}
       />
     );
@@ -1196,7 +1238,11 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                       </Text>
                       <VerifiedBadge />
                     </View>
-                    <PriceCartPill price={item.price ?? '₹ —'} onAdd={() => addToCart(item)} />
+                    <PriceCartPill
+                      price={item.price ?? '₹ —'}
+                      inCart={cartIdSet.has(item.id)}
+                      onAdd={() => addToCart(item)}
+                    />
                   </Pressable>
                 ))}
               </ScrollView>
@@ -1244,6 +1290,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                     <PriceCartPill
                       price={item.price ?? '₹ —'}
                       compact
+                      inCart={cartIdSet.has(item.id)}
                       onAdd={() => addToCart(item)}
                     />
                   </Pressable>
@@ -1283,6 +1330,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                     <PriceCartPill
                       price={item.price ?? '₹ —'}
                       compact
+                      inCart={cartIdSet.has(item.id)}
                       onAdd={() => addToCart(item)}
                     />
                   </Pressable>
@@ -1330,6 +1378,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                         ALL_PRODUCTS.find((p) => p.title === item.title && p.price)?.price ?? '₹ —'
                       }
                       compact
+                      inCart={cartIdSet.has(item.id)}
                       onAdd={() => addToCart(item)}
                     />
                   </Pressable>
@@ -2265,6 +2314,9 @@ const styles = StyleSheet.create({
     backgroundColor: BLUE,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  pricePillCartAdded: {
+    backgroundColor: '#0F9D58',
   },
   saleTitle: {
     flex: 1,

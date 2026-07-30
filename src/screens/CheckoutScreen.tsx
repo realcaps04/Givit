@@ -31,12 +31,46 @@ type CheckoutScreenProps = {
   items: CheckoutItem[];
   onBack: () => void;
   onFinalize?: () => void;
+  onRemoveItem?: (id: string) => void;
+  onChangeQty?: (id: string, qty: number) => void;
 };
 
 function BackIcon() {
   return (
     <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
       <Path d="M15 6l-6 6 6 6" stroke={TEXT} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+      <Path d="M4 7h16" stroke="#E11D48" strokeWidth={1.8} strokeLinecap="round" />
+      <Path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke="#E11D48" strokeWidth={1.8} strokeLinecap="round" />
+      <Path
+        d="M6.5 7l.8 12a2 2 0 0 0 2 1.8h5.4a2 2 0 0 0 2-1.8L17.5 7"
+        stroke="#E11D48"
+        strokeWidth={1.8}
+        strokeLinejoin="round"
+      />
+      <Path d="M10 11v6M14 11v6" stroke="#E11D48" strokeWidth={1.8} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+function MinusIcon() {
+  return (
+    <Svg width={12} height={12} viewBox="0 0 24 24" fill="none">
+      <Path d="M6 12h12" stroke={TEXT} strokeWidth={2.2} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <Svg width={12} height={12} viewBox="0 0 24 24" fill="none">
+      <Path d="M12 6v12M6 12h12" stroke={TEXT} strokeWidth={2.2} strokeLinecap="round" />
     </Svg>
   );
 }
@@ -80,7 +114,13 @@ const CARDS = [
   { id: 'c2', brand: 'VISA', last4: '5632', expiry: '07/25', colors: ['#A78BFA', '#6366F1'] as const },
 ];
 
-export function CheckoutScreen({ items, onBack, onFinalize }: CheckoutScreenProps) {
+export function CheckoutScreen({
+  items,
+  onBack,
+  onFinalize,
+  onRemoveItem,
+  onChangeQty,
+}: CheckoutScreenProps) {
   const insets = useSafeAreaInsets();
   const [shipping, setShipping] = useState<'home' | 'pickup'>('home');
   const [cardId, setCardId] = useState(CARDS[0].id);
@@ -129,6 +169,15 @@ export function CheckoutScreen({ items, onBack, onFinalize }: CheckoutScreenProp
                   >
                     <VerifiedMini />
                   </Pressable>
+                  <Pressable
+                    onPress={() => onRemoveItem?.(item.id)}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel="Remove from cart"
+                    style={({ pressed }) => [styles.deleteBtn, pressed && styles.pressed]}
+                  >
+                    <TrashIcon />
+                  </Pressable>
                 </View>
                 {verifiedTip === item.id ? (
                   <View style={styles.verifiedTip}>
@@ -139,7 +188,30 @@ export function CheckoutScreen({ items, onBack, onFinalize }: CheckoutScreenProp
                   <Text style={styles.productPrice}>{item.price}</Text>
                   <Text style={styles.priceTax}>Including taxes and duties</Text>
                 </View>
-                {item.qty > 1 ? <Text style={styles.qtyText}>Qty {item.qty}</Text> : null}
+                <View style={styles.qtyRow}>
+                  <Pressable
+                    onPress={() => onChangeQty?.(item.id, Math.max(1, item.qty - 1))}
+                    disabled={item.qty <= 1}
+                    style={({ pressed }) => [
+                      styles.qtyBtn,
+                      item.qty <= 1 && styles.qtyBtnDisabled,
+                      pressed && item.qty > 1 && styles.pressed,
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel="Decrease quantity"
+                  >
+                    <MinusIcon />
+                  </Pressable>
+                  <Text style={styles.qtyValue}>{item.qty}</Text>
+                  <Pressable
+                    onPress={() => onChangeQty?.(item.id, item.qty + 1)}
+                    style={({ pressed }) => [styles.qtyBtn, pressed && styles.pressed]}
+                    accessibilityRole="button"
+                    accessibilityLabel="Increase quantity"
+                  >
+                    <PlusIcon />
+                  </Pressable>
+                </View>
               </View>
             </View>
           ))
@@ -307,14 +379,14 @@ const styles = StyleSheet.create({
   },
   productRow: {
     flexDirection: 'row',
-    gap: 14,
-    marginBottom: 18,
-    marginTop: 8,
+    gap: 10,
+    marginBottom: 12,
+    marginTop: 4,
   },
   productImg: {
-    width: 88,
-    height: 88,
-    borderRadius: 16,
+    width: 64,
+    height: 64,
+    borderRadius: 12,
     backgroundColor: FIELD,
   },
   productInfo: {
@@ -325,14 +397,14 @@ const styles = StyleSheet.create({
   productTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 6,
+    gap: 4,
+    marginBottom: 4,
   },
   productTitle: {
     flex: 1,
     minWidth: 0,
     fontFamily: fonts.semiBold,
-    fontSize: 16,
+    fontSize: 14,
     color: TEXT,
   },
   verifiedBtn: {
@@ -346,7 +418,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#E4E4EA',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   verifiedTipText: {
     fontFamily: fonts.medium,
@@ -357,23 +429,50 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'baseline',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 6,
   },
   productPrice: {
     fontFamily: fonts.bold,
-    fontSize: 20,
+    fontSize: 15,
     color: BLUE,
   },
   priceTax: {
     fontFamily: fonts.regular,
-    fontSize: 12,
+    fontSize: 11,
     color: MUTED,
   },
-  qtyText: {
-    marginTop: 4,
-    fontFamily: fonts.medium,
-    fontSize: 12,
-    color: MUTED,
+  deleteBtn: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    backgroundColor: '#FEE2E8',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  qtyRow: {
+    marginTop: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  qtyBtn: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    backgroundColor: FIELD,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  qtyBtnDisabled: {
+    opacity: 0.4,
+  },
+  qtyValue: {
+    minWidth: 18,
+    textAlign: 'center',
+    fontFamily: fonts.semiBold,
+    fontSize: 13,
+    color: TEXT,
   },
   sectionLabel: {
     fontFamily: fonts.medium,
