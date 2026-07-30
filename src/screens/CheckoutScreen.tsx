@@ -196,30 +196,31 @@ function GiftBoxIcon() {
 
 function ChipIcon() {
   return (
-    <Svg width={34} height={26} viewBox="0 0 34 26" fill="none">
-      <Rect x="1" y="1" width="32" height="24" rx="4" fill="#E8C872" stroke="#C9A84A" strokeWidth={1} />
-      <Path d="M1 9h32M1 17h32M12 1v24M22 1v24" stroke="#C9A84A" strokeWidth={0.9} opacity={0.7} />
+    <Svg width={40} height={30} viewBox="0 0 40 30" fill="none">
+      <Rect x="0.75" y="0.75" width="38.5" height="28.5" rx="5" fill="#F0D78C" stroke="#D4B45A" strokeWidth={1.5} />
+      <Path d="M0.75 10h38.5M0.75 20h38.5" stroke="#C9A84A" strokeWidth={1} opacity={0.55} />
+      <Path d="M14 0.75v28.5M26 0.75v28.5" stroke="#C9A84A" strokeWidth={1} opacity={0.55} />
+      <Rect x="15.5" y="11.5" width="9" height="7" rx="1.5" fill="#E2C56A" stroke="#C9A84A" strokeWidth={0.8} />
     </Svg>
   );
 }
 
 function ContactlessIcon() {
   return (
-    <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
-      <Path d="M8 8c2.2 2.2 2.2 5.8 0 8" stroke="rgba(255,255,255,0.85)" strokeWidth={1.6} strokeLinecap="round" />
-      <Path d="M11 5.5c3.6 3.6 3.6 9.4 0 13" stroke="rgba(255,255,255,0.7)" strokeWidth={1.6} strokeLinecap="round" />
-      <Path d="M14 3c5 5 5 13 0 18" stroke="rgba(255,255,255,0.5)" strokeWidth={1.6} strokeLinecap="round" />
+    <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
+      <Path d="M7.5 8.2c2.4 2.2 2.4 5.4 0 7.6" stroke="rgba(255,255,255,0.9)" strokeWidth={1.8} strokeLinecap="round" />
+      <Path d="M10.8 5.6c3.8 3.5 3.8 9.3 0 12.8" stroke="rgba(255,255,255,0.7)" strokeWidth={1.8} strokeLinecap="round" />
+      <Path d="M14.2 3c5.2 4.8 5.2 13.2 0 18" stroke="rgba(255,255,255,0.45)" strokeWidth={1.8} strokeLinecap="round" />
     </Svg>
   );
 }
 
-function VisaLogo({ light = true }: { light?: boolean }) {
-  const fill = light ? '#FFFFFF' : '#1A1F71';
+function VisaLogo() {
   return (
-    <Svg width={46} height={16} viewBox="0 0 48 16" fill="none">
+    <Svg width={52} height={18} viewBox="0 0 72 24" fill="none">
       <Path
-        d="M20.4 1.2h-3.4l-2.1 13.2h3.4L20.4 1.2Zm11.3 8.5 1.8-4.9.9 4.9h-2.7Zm3.5 4.7h3.1L35.6 1.2h-2.9c-.6 0-1.1.4-1.3.9l-4.6 11.1h3.5l.6-1.8h4.3l.4 1.8ZM16.8 1.2l-3.3 8.8-.4-1.8c-.6-2-2.5-4.2-4.6-5.2l3 11.4h3.5L20.2 1.2h-3.4ZM8.1 1.2H2.8L2.7 1.5c4.1 1 6.9 3.5 8 6.5L9.4 2.1c-.2-.6-.7-.9-1.3-.9Z"
-        fill={fill}
+        d="M31.2 2.4h-5.2l-3.2 19.2h5.2L31.2 2.4Zm17 12.4 2.7-7.2 1.4 7.2h-4.1Zm5.2 6.8h4.7L54.4 2.4H50c-1 0-1.8.6-2.1 1.4L40.9 21.6h5.3l1-2.6h6.5l.7 2.6ZM25.5 2.4l-5 12.8-.5-2.6C19 9.6 16.2 6.4 13 5l4.6 16.6H23L30.8 2.4h-5.3ZM12.4 2.4H4.4L4.2 2.9c6.2 1.5 10.4 5.1 12.1 9.5L14.4 3.7c-.2-.8-1-1.3-2-1.3Z"
+        fill="#FFFFFF"
       />
     </Svg>
   );
@@ -227,74 +228,62 @@ function VisaLogo({ light = true }: { light?: boolean }) {
 
 function MastercardLogo() {
   return (
-    <Svg width={38} height={24} viewBox="0 0 38 24" fill="none">
-      <Circle cx="14" cy="12" r="9" fill="#EB001B" />
-      <Circle cx="24" cy="12" r="9" fill="#F79E1B" />
-      <Path
-        d="M19 5.4a9 9 0 0 1 0 13.2 9 9 0 0 1 0-13.2Z"
-        fill="#FF5F00"
-      />
-    </Svg>
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <Svg width={42} height={26} viewBox="0 0 42 26" fill="none">
+        <Circle cx="15" cy="13" r="10" fill="#EB001B" />
+        <Circle cx="27" cy="13" r="10" fill="#F79E1B" />
+        <Path d="M21 5.2a10 10 0 0 1 0 15.6 10 10 0 0 1 0-15.6Z" fill="#FF5F00" />
+      </Svg>
+    </View>
   );
 }
 
 function GooglePayLogo() {
   return (
-    <Svg width={52} height={22} viewBox="0 0 52 22" fill="none">
-      <Path d="M24.2 16.8V5.2h2.1l3.4 8.6 3.4-8.6h2.1v11.6h-1.6V7.6l-3.4 8.4h-1.2l-3.4-8.4v9.2h-1.4Z" fill="#5F6368" />
-      <Path d="M37.2 17c-2.5 0-4.3-1.8-4.3-4.3s1.8-4.3 4.3-4.3c1.2 0 2.2.4 3 1.2l-1.1 1.1a2.5 2.5 0 0 0-1.9-.8c-1.6 0-2.8 1.3-2.8 2.8s1.2 2.8 2.8 2.8c1 0 1.7-.4 2.1-1h-2.1v-1.5h3.7v.8c0 2.3-1.5 3.2-3.7 3.2Z" fill="#5F6368" />
-      <Path d="M43.4 17c-2.3 0-4.1-1.8-4.1-4.3s1.8-4.3 4.1-4.3c2.3 0 4.1 1.8 4.1 4.3s-1.8 4.3-4.1 4.3Zm0-1.5c1.5 0 2.6-1.2 2.6-2.8s-1.1-2.8-2.6-2.8-2.6 1.2-2.6 2.8 1.1 2.8 2.6 2.8Z" fill="#5F6368" />
-      <Path d="M10.6 10.9v2.4h3.8c-.2 1-.7 1.8-1.4 2.3v1.9h2.3c1.3-1.2 2.1-3 2.1-5.2 0-.4 0-.8-.1-1.1H10.6v-.3Z" fill="#4285F4" />
-      <Path d="M10.6 18.8c1.9 0 3.5-.6 4.7-1.7l-2.3-1.8c-.6.4-1.5.7-2.4.7-1.9 0-3.4-1.2-4-2.9H4.2v1.9c1.2 2.3 3.6 3.8 6.4 3.8Z" fill="#34A853" />
-      <Path d="M6.6 13.1c-.2-.4-.2-.9-.2-1.4s.1-1 .2-1.4V8.4H4.2C3.7 9.4 3.5 10.5 3.5 11.7s.2 2.3.7 3.3l2.4-1.9Z" fill="#FBBC05" />
-      <Path d="M10.6 6.9c1 0 2 .4 2.7 1.1l2-2C14.1 4.8 12.5 4 10.6 4 7.8 4 5.4 5.5 4.2 7.8l2.4 1.9c.6-1.7 2.1-2.8 4-2.8Z" fill="#EA4335" />
-    </Svg>
+    <View style={styles.brandLogoRow}>
+      <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+        <Path d="M22.6 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h5.9c-.3 1.4-1 2.5-2.1 3.3v2.7h3.4c2-1.8 3.4-4.5 3.4-8Z" fill="#4285F4" />
+        <Path d="M12 23c2.9 0 5.3-.9 7.1-2.6l-3.4-2.7c-1 .6-2.2 1-3.7 1-2.8 0-5.2-1.9-6.1-4.4H2.4v2.8C4.2 20.7 7.8 23 12 23Z" fill="#34A853" />
+        <Path d="M5.9 14.3c-.2-.7-.4-1.4-.4-2.3s.1-1.6.4-2.3V7H2.4C1.6 8.5 1.1 10.2 1.1 12s.5 3.5 1.3 5l3.5-2.7Z" fill="#FBBC05" />
+        <Path d="M12 5.4c1.6 0 3 .5 4.1 1.6L19.2 4C17.3 2.2 14.9 1 12 1 7.8 1 4.2 3.3 2.4 7l3.5 2.7c.9-2.5 3.3-4.3 6.1-4.3Z" fill="#EA4335" />
+      </Svg>
+      <Text style={styles.gpayText}>Pay</Text>
+    </View>
   );
 }
 
 function ApplePayLogo() {
   return (
-    <Svg width={48} height={20} viewBox="0 0 48 20" fill="none">
-      <Path
-        d="M8.4 3.6c.5-.6 1.1-1.1 1.1-1.9-.1-.1-.8.1-1.4.7-.5.5-1 1.2-.9 1.9.1 0 .9-.1 1.2-.7ZM9.5 5.3c-1.2 0-2.1.7-2.7.7-.6 0-1.4-.6-2.4-.6-1.2 0-2.4.7-3 1.8-1.3 2.3-.3 5.6 1 7.5.6.9 1.3 1.9 2.3 1.9.9 0 1.2-.6 2.3-.6 1.1 0 1.4.6 2.4.6 1 0 1.6-.9 2.2-1.8.7-1 1-2 1-2.1-.1 0-1.9-.7-1.9-2.9 0-1.8 1.5-2.7 1.5-2.7-.9-1.3-2.2-1.4-2.7-1.4Z"
-        fill="#000000"
-      />
-      <Path
-        d="M16.2 16.6V5.8h2.5c2.2 0 3.7 1.4 3.7 3.4 0 2.1-1.6 3.5-3.8 3.5h-1.1v3.9h-1.3Zm1.3-5.1h1c1.4 0 2.4-.8 2.4-2.2s-1-2.2-2.4-2.2h-1v4.4ZM24 16.8c-1.9 0-3.2-1.3-3.2-3.2s1.3-3.2 3.2-3.2c.9 0 1.6.3 2.1.8l-.8.8c-.3-.3-.8-.6-1.3-.6-1.1 0-1.9.8-1.9 2.1s.8 2.1 1.9 2.1c.6 0 1-.2 1.4-.6l.8.8c-.5.6-1.3 1-2.2 1ZM29.3 16.8c-1.8 0-3-1.2-3-3.2s1.2-3.2 3.1-3.2 3.1 1.3 3.1 3.4v.3h-4.8c.1 1.2.9 2 2.1 2 .7 0 1.3-.2 1.8-.7l.7.7c-.6.6-1.4.9-2.4.9Zm-.1-5.2c-1 0-1.7.6-1.9 1.6h3.6c-.1-1-.8-1.6-1.7-1.6ZM34.2 16.6v-5.4h-.9v-1.1h.9V8.4l1.3-.2v1.9h1.5v1.1h-1.5v5.4h-1.3ZM38.4 16.8c-1.1 0-1.8-.6-1.8-1.5 0-1.1.9-1.6 2.4-1.7l1.4-.1v-.4c0-.7-.4-1.1-1.2-1.1-.6 0-1.1.2-1.5.5l-.6-.8c.5-.4 1.3-.7 2.2-.7 1.5 0 2.4.8 2.4 2.2v4.4h-1.2v-.8c-.4.5-1.1.9-2.1.9Zm.3-1.1c.8 0 1.4-.5 1.4-1.2v-.5l-1.2.1c-.8.1-1.2.3-1.2.8 0 .5.4.8 1 .8ZM43.5 16.8c-.9 0-1.5-.4-1.8-1.1l1.1-.5c.1.4.5.6.9.6.5 0 .8-.3.8-.6 0-.3-.2-.5-.8-.7l-.8-.3c-.9-.3-1.4-.8-1.4-1.6 0-1 .8-1.7 1.9-1.7.8 0 1.4.3 1.7 1l-1 .5c-.2-.3-.5-.5-.8-.5-.4 0-.7.2-.7.5s.2.5.8.7l.8.3c.9.3 1.4.8 1.4 1.7 0 1.1-.8 1.8-2.1 1.8Z"
-        fill="#000000"
-      />
-    </Svg>
+    <View style={styles.brandLogoRow}>
+      <Svg width={16} height={18} viewBox="0 0 16 20" fill="none">
+        <Path
+          d="M13.1 10.5c0-2.4 2-3.5 2.1-3.6-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.6.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.1 1-4 2.5-1.7 3-.5 7.4 1.2 9.8.9 1.2 1.9 2.5 3.2 2.4 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.3.8 1.4 0 2.2-1.2 3.1-2.4.9-1.4 1.3-2.7 1.3-2.8-.1 0-2.5-1-2.5-3.9ZM10.9 3.3c.7-.8 1.1-2 1-3.1-1 .1-2.2.7-2.9 1.5-.6.7-1.2 1.9-1 3 1.1.1 2.2-.5 2.9-1.4Z"
+          fill="#111111"
+        />
+      </Svg>
+      <Text style={styles.applePayText}>Pay</Text>
+    </View>
   );
 }
 
 function PayPalLogo() {
   return (
-    <Svg width={56} height={18} viewBox="0 0 56 18" fill="none">
-      <Path
-        d="M20.6 1.2h-5.4c-.4 0-.7.3-.8.7L12.2 16c0 .3.2.5.5.5h2.4c.4 0 .7-.3.8-.7l.6-3.7c0-.4.4-.7.8-.7h1.8c3.7 0 5.9-1.8 6.4-5.4.1-.7.1-1.3 0-1.8C25 2.5 23.2 1.2 20.6 1.2Zm1 5.1c-.3 2-1.9 2-3.4 2h-.9l.6-3.8c0-.2.2-.4.4-.4h.5c1.1 0 2.1 0 2.6.6.3.3.4.8.2 1.6Z"
-        fill="#003087"
-      />
-      <Path
-        d="M8.4 1.2H3c-.4 0-.7.3-.8.7L0 16c0 .3.2.5.5.5h2.8c.4 0 .7-.3.8-.7l.6-4c0-.4.4-.7.8-.7h1.8c3.7 0 5.9-1.8 6.4-5.4.1-.7.1-1.3 0-1.8C12.8 2.5 11 1.2 8.4 1.2Zm1 5.1c-.3 2-1.9 2-3.4 2H5.1l.6-3.8c0-.2.2-.4.4-.4h.5c1.1 0 2.1 0 2.6.6.3.3.4.8.2 1.6Z"
-        fill="#001C64"
-      />
-      <Path
-        d="M41.8 6.3h-2.5c-.2 0-.4.2-.4.4l-.1.6-.2-.3c-.5-.7-1.5-1-2.6-1-2.4 0-4.5 1.9-4.5 4.6 0 2.4 1.7 4.3 4.1 4.3 1 0 1.9-.3 2.6-1l-.1.3c0 .3.2.5.5.5h2.2c.4 0 .7-.3.8-.7l1.3-8.2c0-.3-.2-.5-.5-.5h.1Zm-3.5 4.4c0 1.3-1 2.3-2.2 2.3-.9 0-1.9-.7-1.9-2.3 0-1.2 1-2.3 2.2-2.3 1 0 1.9.7 1.9 2.3Z"
-        fill="#003087"
-      />
-      <Path
-        d="M49.8 10.3c-.4-.2-.7-.4-.7-.6 0-.4.4-.7 1.1-.7.6 0 1.1.1 1.6.4.1 0 .2 0 .2-.1l.5-1.6c0-.1 0-.2-.1-.2-.6-.3-1.4-.5-2.3-.5-2.1 0-3.5 1.1-3.5 2.7 0 1.2.9 1.9 2.2 2.4.5.2.9.4.9.7 0 .4-.5.8-1.2.8-.8 0-1.5-.2-2.1-.5-.1 0-.2 0-.2.1l-.5 1.6c0 .1 0 .2.1.2.7.3 1.7.5 2.6.5 2.3 0 3.7-1.1 3.7-2.8 0-1.2-.9-1.9-2.4-2.4Z"
-        fill="#003087"
-      />
-      <Path
-        d="M54.6 6.3h-2.5c-.3 0-.5.2-.6.4l-3.4 8.2c0 .3.2.5.5.5h2.4c.3 0 .5-.2.5-.3l.9-2.6h2.9l.5 2.4c0 .3.3.5.6.5h2.1c.3 0 .5-.3.4-.6L55.2 6.7c0-.2-.3-.4-.6-.4Zm-1.4 5.3.9-2.8.5 2.8h-1.4Z"
-        fill="#001C64"
-      />
-      <Path
-        d="M32.2 6.3h-2.5c-.2 0-.5.1-.6.4l-1.7 2.6-1.7-2.5c-.1-.2-.3-.4-.6-.4h-2.5c-.3 0-.5.3-.4.6l3.7 5.4-1.7 2.6c-.1.3.1.6.4.6h2.5c.2 0 .5-.1.6-.4l4.6-8.2c.2-.3 0-.6-.3-.6h-.2Z"
-        fill="#001C64"
-      />
-    </Svg>
+    <View style={styles.brandLogoRow}>
+      <Text style={styles.paypalPay}>Pay</Text>
+      <Text style={styles.paypalPal}>Pal</Text>
+    </View>
+  );
+}
+
+function UpiLogo() {
+  return (
+    <View style={styles.brandLogoRow}>
+      <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+        <Path d="M4 18 12 3l8 15H4Z" fill="#097939" />
+        <Path d="M7 18 12 8.5 17 18H7Z" fill="#ED752E" />
+      </Svg>
+      <Text style={styles.upiText}>UPI</Text>
+    </View>
   );
 }
 
@@ -425,7 +414,8 @@ export function CheckoutScreen({
   const [pickupName, setPickupName] = useState('Alex Morgan');
   const [pickupPhone, setPickupPhone] = useState('+91 98765 43210');
   const [cardId, setCardId] = useState(CARDS[0].id);
-  const [payExtra, setPayExtra] = useState<'gpay' | 'apple' | 'paypal' | 'cod' | null>(null);
+  const [payExtra, setPayExtra] = useState<'gpay' | 'apple' | 'paypal' | 'cod' | 'upi' | null>(null);
+  const [upiId, setUpiId] = useState('');
   const [couponCode, setCouponCode] = useState('');
   const [appliedVoucherId, setAppliedVoucherId] = useState<string | null>(null);
   const [couponMessage, setCouponMessage] = useState<string | null>(null);
@@ -453,7 +443,11 @@ export function CheckoutScreen({
         ? 'Apple Pay'
         : payExtra === 'paypal'
           ? 'PayPal'
-          : 'Cash on Delivery'
+          : payExtra === 'upi'
+            ? upiId.trim()
+              ? `UPI · ${upiId.trim()}`
+              : 'UPI'
+            : 'Cash on Delivery'
     : selectedCard
       ? `${selectedCard.brand === 'visa' ? 'Visa' : 'Mastercard'} •••• ${selectedCard.last4}`
       : 'Card';
@@ -818,7 +812,7 @@ export function CheckoutScreen({
 
         {items.length > 0 && step === 2 ? (
           <>
-            <Text style={styles.sectionLabel}>Select your payment method</Text>
+            <Text style={styles.sectionLabel}>Saved cards</Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -827,14 +821,21 @@ export function CheckoutScreen({
               {CARDS.map((card) => {
                 const active = cardId === card.id && !payExtra;
                 return (
-                  <Pressable key={card.id} onPress={() => { setCardId(card.id); setPayExtra(null); }}>
+                  <Pressable
+                    key={card.id}
+                    onPress={() => {
+                      setCardId(card.id);
+                      setPayExtra(null);
+                    }}
+                  >
                     <LinearGradient
                       colors={[...card.colors]}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 1 }}
                       style={[styles.payCard, active && styles.payCardActive]}
                     >
-                      <View style={styles.payCardShine} />
+                      <View style={styles.payCardGlow} />
+                      <View style={styles.payCardStripe} />
                       {active ? (
                         <View style={styles.payCardCheck}>
                           <CheckIcon />
@@ -842,16 +843,20 @@ export function CheckoutScreen({
                       ) : null}
                       <View style={styles.payCardTop}>
                         <ChipIcon />
-                        <ContactlessIcon />
+                        <View style={styles.payCardTopRight}>
+                          <ContactlessIcon />
+                        </View>
                       </View>
-                      <Text style={styles.payNumber}>••••  ••••  ••••  {card.last4}</Text>
+                      <Text style={styles.payNumber}>
+                        4532  ••••  ••••  {card.last4}
+                      </Text>
                       <View style={styles.payCardBottom}>
-                        <View style={styles.payCardMeta}>
+                        <View style={styles.payCardMetaWide}>
                           <Text style={styles.payMetaLabel}>CARD HOLDER</Text>
                           <Text style={styles.payHolder}>{card.holder}</Text>
                         </View>
                         <View style={styles.payCardMeta}>
-                          <Text style={styles.payMetaLabel}>EXPIRES</Text>
+                          <Text style={styles.payMetaLabel}>VALID THRU</Text>
                           <Text style={styles.payExpiry}>{card.expiry}</Text>
                         </View>
                         <View style={styles.payBrandWrap}>
@@ -864,12 +869,14 @@ export function CheckoutScreen({
               })}
             </ScrollView>
 
-            <View style={styles.walletRow}>
+            <Text style={styles.sectionLabel}>Wallets & apps</Text>
+            <View style={styles.walletGrid}>
               {(
                 [
                   { id: 'gpay' as const, label: 'Google Pay', Logo: GooglePayLogo },
                   { id: 'apple' as const, label: 'Apple Pay', Logo: ApplePayLogo },
                   { id: 'paypal' as const, label: 'PayPal', Logo: PayPalLogo },
+                  { id: 'upi' as const, label: 'UPI', Logo: UpiLogo },
                 ]
               ).map((w) => {
                 const active = payExtra === w.id;
@@ -886,6 +893,25 @@ export function CheckoutScreen({
                 );
               })}
             </View>
+
+            {payExtra === 'upi' ? (
+              <View style={styles.upiBox}>
+                <Text style={styles.upiBoxTitle}>Enter UPI ID</Text>
+                <TextInput
+                  value={upiId}
+                  onChangeText={setUpiId}
+                  placeholder="yourname@oksbi"
+                  placeholderTextColor={MUTED}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  style={styles.field}
+                  {...(Platform.OS === 'web'
+                    ? ({ outlineStyle: 'none', outlineWidth: 0 } as object)
+                    : null)}
+                />
+                <Text style={styles.upiHint}>Example: alex@okaxis · givit@paytm · name@ybl</Text>
+              </View>
+            ) : null}
 
             {shipping === 'home' ? (
               <Pressable
@@ -1456,115 +1482,188 @@ const styles = StyleSheet.create({
   cardsRow: {
     gap: 14,
     paddingRight: 8,
-    paddingVertical: 4,
-    marginBottom: 14,
+    paddingVertical: 6,
+    marginBottom: 16,
   },
   payCard: {
-    width: 268,
-    height: 158,
-    borderRadius: 18,
-    paddingHorizontal: 18,
-    paddingVertical: 16,
+    width: 290,
+    height: 178,
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 16,
     justifyContent: 'space-between',
     overflow: 'hidden',
     ...(Platform.OS === 'web'
-      ? ({ boxShadow: '0 12px 28px rgba(15, 23, 42, 0.22)' } as object)
+      ? ({ boxShadow: '0 14px 32px rgba(15, 23, 42, 0.28)' } as object)
       : {
           shadowColor: '#0F172A',
-          shadowOpacity: 0.22,
-          shadowRadius: 16,
-          shadowOffset: { width: 0, height: 8 },
-          elevation: 6,
+          shadowOpacity: 0.28,
+          shadowRadius: 18,
+          shadowOffset: { width: 0, height: 10 },
+          elevation: 8,
         }),
   },
-  payCardShine: {
+  payCardGlow: {
     position: 'absolute',
-    top: -40,
-    right: -30,
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    top: -50,
+    right: -40,
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+  },
+  payCardStripe: {
+    position: 'absolute',
+    top: 58,
+    left: 0,
+    right: 0,
+    height: 34,
+    backgroundColor: 'rgba(0,0,0,0.18)',
   },
   payCardActive: {
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.7)',
+    borderWidth: 2.5,
+    borderColor: '#FFFFFF',
   },
   payCardCheck: {
     position: 'absolute',
     top: 12,
     right: 12,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: 'rgba(255,255,255,0.28)',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(15,157,88,0.95)',
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 2,
+    zIndex: 3,
   },
   payCardTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    justifyContent: 'space-between',
+    zIndex: 1,
+  },
+  payCardTopRight: {
+    marginRight: 28,
   },
   payNumber: {
     fontFamily: fonts.semiBold,
-    fontSize: 17,
-    letterSpacing: 1.4,
+    fontSize: 18,
+    letterSpacing: 1.8,
     color: '#FFFFFF',
-    marginTop: 8,
+    zIndex: 1,
+    marginTop: 18,
   },
   payCardBottom: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
-    gap: 8,
+    gap: 10,
+    zIndex: 1,
   },
   payCardMeta: {
-    flexShrink: 1,
+    flexShrink: 0,
+  },
+  payCardMetaWide: {
+    flex: 1,
+    minWidth: 0,
   },
   payMetaLabel: {
     fontFamily: fonts.medium,
     fontSize: 8,
-    letterSpacing: 0.8,
-    color: 'rgba(255,255,255,0.65)',
-    marginBottom: 2,
+    letterSpacing: 1,
+    color: 'rgba(255,255,255,0.62)',
+    marginBottom: 3,
   },
   payHolder: {
     fontFamily: fonts.semiBold,
-    fontSize: 11,
+    fontSize: 12,
     color: '#FFFFFF',
-    letterSpacing: 0.4,
+    letterSpacing: 0.8,
   },
   payExpiry: {
     fontFamily: fonts.semiBold,
-    fontSize: 12,
+    fontSize: 13,
     color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
   payBrandWrap: {
-    marginLeft: 'auto',
     alignItems: 'flex-end',
     justifyContent: 'flex-end',
+    minWidth: 52,
   },
-  walletRow: {
+  walletGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 10,
-    marginBottom: 20,
+    marginBottom: 14,
   },
   walletBtn: {
-    flex: 1,
-    height: 52,
-    borderRadius: 12,
+    width: '47%',
+    height: 56,
+    borderRadius: 14,
     borderWidth: 1.5,
     borderColor: '#E4E4EA',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 6,
+    paddingHorizontal: 10,
   },
   walletBtnActive: {
     borderColor: BLUE,
     backgroundColor: 'rgba(0, 76, 255, 0.06)',
+  },
+  brandLogoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  gpayText: {
+    fontFamily: fonts.medium,
+    fontSize: 16,
+    color: '#5F6368',
+    marginTop: 1,
+  },
+  applePayText: {
+    fontFamily: fonts.medium,
+    fontSize: 17,
+    color: '#111111',
+    letterSpacing: -0.3,
+  },
+  paypalPay: {
+    fontFamily: fonts.bold,
+    fontSize: 16,
+    color: '#003087',
+  },
+  paypalPal: {
+    fontFamily: fonts.bold,
+    fontSize: 16,
+    color: '#009CDE',
+    marginLeft: -2,
+  },
+  upiText: {
+    fontFamily: fonts.bold,
+    fontSize: 15,
+    color: '#097939',
+    letterSpacing: 0.5,
+  },
+  upiBox: {
+    marginBottom: 16,
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: FIELD,
+  },
+  upiBoxTitle: {
+    fontFamily: fonts.semiBold,
+    fontSize: 14,
+    color: TEXT,
+    marginBottom: 10,
+  },
+  upiHint: {
+    fontFamily: fonts.regular,
+    fontSize: 12,
+    color: MUTED,
+    marginTop: -2,
   },
   codCard: {
     flexDirection: 'row',
