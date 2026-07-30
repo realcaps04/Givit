@@ -1303,14 +1303,6 @@ const styles = StyleSheet.create({
     paddingRight: 8,
     zIndex: 1,
   },
-  categoryCount: {
-    fontFamily: fonts.medium,
-    fontSize: 11,
-    letterSpacing: 0.6,
-    color: MUTED,
-    marginBottom: 6,
-    textTransform: 'uppercase',
-  },
   categoryHeroTitle: {
     fontFamily: fonts.display,
     fontSize: 28,
