@@ -37,42 +37,71 @@ const PINK_CARD = '#F8E8EE';
 const CREAM_CARD = '#F7F0E4';
 const useNative = Platform.OS !== 'web';
 
-const CATEGORIES = ['Gifts', 'Flowers', 'Fashion', 'Tech', 'Gourmet', 'Kids'];
+const CATEGORIES = ['Gifts', 'Flowers', 'Plants', 'Fashion', 'Tech', 'Gourmet', 'Kids'];
 
 const CATEGORY_CARDS: {
   id: CategoryIllustrationId;
   title: string;
-  colors: readonly [string, string];
+  tagline: string;
+  count: string;
+  colors: readonly [string, string, string];
+  glow: string;
 }[] = [
   {
     id: 'tech',
     title: 'Tech',
-    colors: ['#D9ECFF', '#F4F9FF'],
+    tagline: 'Smart gifts that impress',
+    count: '48 curated',
+    colors: ['#F5F8FC', '#EEF3FA', '#FFFFFF'],
+    glow: 'rgba(0, 76, 255, 0.10)',
   },
   {
     id: 'fashion',
     title: 'Fashion',
-    colors: ['#D8F5E8', '#F3FBF7'],
+    tagline: 'Style they’ll love to wear',
+    count: '36 curated',
+    colors: ['#F4F9F6', '#EAF4EF', '#FFFFFF'],
+    glow: 'rgba(45, 122, 90, 0.10)',
   },
   {
     id: 'flowers',
     title: 'Flowers',
-    colors: ['#F8DDE8', '#FDF4F8'],
+    tagline: 'Blooms for every moment',
+    count: '24 curated',
+    colors: ['#FAF5F7', '#F4EBEE', '#FFFFFF'],
+    glow: 'rgba(180, 100, 130, 0.10)',
+  },
+  {
+    id: 'plants',
+    title: 'Plants',
+    tagline: 'Green gifts that grow',
+    count: '18 curated',
+    colors: ['#F4F8F5', '#EAF2EC', '#FFFFFF'],
+    glow: 'rgba(70, 130, 90, 0.10)',
   },
   {
     id: 'gourmet',
     title: 'Gourmet',
-    colors: ['#FFE4CC', '#FFF8F0'],
+    tagline: 'Treats worth celebrating',
+    count: '32 curated',
+    colors: ['#FAF7F3', '#F3ECE4', '#FFFFFF'],
+    glow: 'rgba(160, 110, 70, 0.10)',
   },
   {
     id: 'kids',
     title: 'Kids',
-    colors: ['#E8DEFF', '#F7F3FF'],
+    tagline: 'Playful joy for little ones',
+    count: '28 curated',
+    colors: ['#F6F4FA', '#EEEAF5', '#FFFFFF'],
+    glow: 'rgba(110, 90, 180, 0.10)',
   },
   {
     id: 'gifts',
     title: 'Gifts',
-    colors: ['#D6E4FF', '#F2F6FF'],
+    tagline: 'Signature Givit picks',
+    count: '60 curated',
+    colors: ['#F3F6FC', '#E8EEF8', '#FFFFFF'],
+    glow: 'rgba(0, 76, 255, 0.12)',
   },
 ];
 
@@ -86,6 +115,7 @@ const SEARCH_SUGGESTIONS = [
   'Gourmet hampers',
   'Personalized gifts',
   'Flowers & bouquets',
+  'Indoor plants',
   'Kids toys',
   'Luxury gift boxes',
   'Birthday surprises',
@@ -203,6 +233,14 @@ function BellIcon() {
         strokeLinejoin="round"
       />
       <Path d="M10 18.5a2 2 0 0 0 4 0" stroke={TEXT} strokeWidth={1.8} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+function ChevronRightIcon() {
+  return (
+    <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
+      <Path d="M9 6l6 6-6 6" stroke={BLUE} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   );
 }
@@ -623,45 +661,67 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
               </ScrollView>
             </ScrollView>
           ) : tab === 'categories' ? (
-            <ScrollView
-              style={styles.scroll}
-              contentContainerStyle={styles.categoriesContent}
-              showsVerticalScrollIndicator={false}
-            >
-              <Pressable onPress={openSearch} style={styles.categorySearchBar}>
-                <Text style={styles.categorySearchText} numberOfLines={1}>
-                  {query.trim() || CATEGORY_SEARCH_PLACEHOLDER}
-                </Text>
-                <View style={styles.categorySearchIcon}>
-                  <SearchIcon />
+            <LinearGradient colors={['#F7F8FC', '#FFFFFF']} style={styles.categoriesPage}>
+              <ScrollView
+                style={styles.scroll}
+                contentContainerStyle={styles.categoriesContent}
+                showsVerticalScrollIndicator={false}
+              >
+                <View style={styles.categoriesHeader}>
+                  <Text style={styles.categoriesEyebrow}>EXPLORE</Text>
+                  <Text style={styles.categoriesHeading}>Categories</Text>
+                  <Text style={styles.categoriesLead}>
+                    Discover thoughtfully curated gifts by mood and moment
+                  </Text>
                 </View>
-              </Pressable>
 
-              <View style={styles.categoryList}>
-                {CATEGORY_CARDS.map((item) => (
-                  <Pressable
-                    key={item.id}
-                    onPress={() => {
-                      setCategory(item.title);
-                      switchTab('home');
-                    }}
-                    style={({ pressed }) => [styles.categoryHeroCard, pressed && styles.pressed]}
-                  >
-                    <LinearGradient
-                      colors={[...item.colors]}
-                      start={{ x: 0.5, y: 0 }}
-                      end={{ x: 0.5, y: 1 }}
-                      style={styles.categoryGradient}
+                <Pressable onPress={openSearch} style={styles.categorySearchBar}>
+                  <View style={styles.categorySearchIcon}>
+                    <SearchIcon />
+                  </View>
+                  <Text style={styles.categorySearchText} numberOfLines={1}>
+                    {query.trim() || CATEGORY_SEARCH_PLACEHOLDER}
+                  </Text>
+                </Pressable>
+
+                <View style={styles.categoryList}>
+                  {CATEGORY_CARDS.map((item, index) => (
+                    <Pressable
+                      key={item.id}
+                      onPress={() => {
+                        setCategory(item.title);
+                        switchTab('home');
+                      }}
+                      style={({ pressed }) => [
+                        styles.categoryHeroCard,
+                        pressed && styles.categoryHeroPressed,
+                      ]}
                     >
-                      <Text style={styles.categoryHeroTitle}>{item.title}</Text>
-                      <View style={styles.categoryHeroArt}>
-                        <CategoryIllustration id={item.id} size={168} />
-                      </View>
-                    </LinearGradient>
-                  </Pressable>
-                ))}
-              </View>
-            </ScrollView>
+                      <LinearGradient
+                        colors={[...item.colors]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.categoryGradient}
+                      >
+                        <View style={[styles.categoryGlow, { backgroundColor: item.glow }]} />
+                        <View style={styles.categoryCopy}>
+                          <Text style={styles.categoryCount}>{item.count}</Text>
+                          <Text style={styles.categoryHeroTitle}>{item.title}</Text>
+                          <Text style={styles.categoryTagline}>{item.tagline}</Text>
+                          <View style={styles.categoryCta}>
+                            <Text style={styles.categoryCtaText}>Shop now</Text>
+                            <ChevronRightIcon />
+                          </View>
+                        </View>
+                        <View style={styles.categoryHeroArt}>
+                          <CategoryIllustration id={item.id} size={index % 2 === 0 ? 148 : 138} />
+                        </View>
+                      </LinearGradient>
+                    </Pressable>
+                  ))}
+                </View>
+              </ScrollView>
+            </LinearGradient>
           ) : (
             <View style={styles.placeholderTab}>
               <Text style={styles.placeholderTitle}>
@@ -807,7 +867,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   searchWrap: {
-    width: '68%',
+    flex: 1,
+    minWidth: 0,
     height: 44,
     borderRadius: 22,
     backgroundColor: FIELD,
@@ -899,26 +960,56 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: '#FFFFFF',
   },
+  categoriesPage: {
+    flex: 1,
+  },
   categoriesContent: {
     paddingHorizontal: 18,
-    paddingBottom: 24,
+    paddingBottom: 28,
+    paddingTop: 4,
+  },
+  categoriesHeader: {
+    marginBottom: 18,
+  },
+  categoriesEyebrow: {
+    fontFamily: fonts.semiBold,
+    fontSize: 11,
+    letterSpacing: 2.2,
+    color: BLUE,
+    marginBottom: 6,
+  },
+  categoriesHeading: {
+    fontFamily: fonts.display,
+    fontSize: 34,
+    color: TEXT,
+    marginBottom: 8,
+  },
+  categoriesLead: {
+    fontFamily: fonts.regular,
+    fontSize: 14,
+    lineHeight: 20,
+    color: MUTED,
+    maxWidth: 280,
   },
   categorySearchBar: {
     height: 52,
-    borderRadius: 16,
+    borderRadius: 18,
     backgroundColor: '#FFFFFF',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 18,
-    marginBottom: 18,
+    paddingHorizontal: 14,
+    marginBottom: 20,
+    gap: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(15, 23, 42, 0.06)',
     ...(Platform.OS === 'web'
-      ? ({ boxShadow: '0 8px 24px rgba(20, 30, 60, 0.08)' } as object)
+      ? ({ boxShadow: '0 10px 28px rgba(20, 30, 60, 0.07)' } as object)
       : {
           shadowColor: '#14203C',
-          shadowOpacity: 0.1,
-          shadowRadius: 16,
-          shadowOffset: { width: 0, height: 6 },
-          elevation: 4,
+          shadowOpacity: 0.08,
+          shadowRadius: 18,
+          shadowOffset: { width: 0, height: 8 },
+          elevation: 3,
         }),
   },
   categorySearchText: {
@@ -928,35 +1019,98 @@ const styles = StyleSheet.create({
     color: MUTED,
   },
   categorySearchIcon: {
-    width: 28,
-    height: 28,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: FIELD,
     alignItems: 'center',
     justifyContent: 'center',
   },
   categoryList: {
-    gap: 16,
+    gap: 14,
   },
   categoryHeroCard: {
-    borderRadius: 28,
+    borderRadius: 26,
     overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 14px 36px rgba(20, 30, 60, 0.08)' } as object)
+      : {
+          shadowColor: '#0F172A',
+          shadowOpacity: 0.08,
+          shadowRadius: 20,
+          shadowOffset: { width: 0, height: 10 },
+          elevation: 4,
+        }),
+  },
+  categoryHeroPressed: {
+    opacity: 0.94,
+    transform: [{ scale: 0.985 }],
   },
   categoryGradient: {
-    minHeight: 168,
-    paddingTop: 22,
-    paddingHorizontal: 16,
+    minHeight: 148,
+    paddingVertical: 18,
+    paddingLeft: 20,
+    paddingRight: 8,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    overflow: 'hidden',
+  },
+  categoryGlow: {
+    position: 'absolute',
+    right: -20,
+    bottom: -30,
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+  },
+  categoryCopy: {
+    flex: 1,
+    paddingRight: 8,
+    zIndex: 1,
+  },
+  categoryCount: {
+    fontFamily: fonts.medium,
+    fontSize: 11,
+    letterSpacing: 0.6,
+    color: MUTED,
+    marginBottom: 6,
+    textTransform: 'uppercase',
   },
   categoryHeroTitle: {
-    fontFamily: fonts.bold,
+    fontFamily: fonts.display,
     fontSize: 28,
-    color: '#1B1B2A',
-    textAlign: 'center',
+    color: TEXT,
+    marginBottom: 4,
+  },
+  categoryTagline: {
+    fontFamily: fonts.regular,
+    fontSize: 13,
+    lineHeight: 18,
+    color: MUTED,
+    marginBottom: 14,
+    maxWidth: 150,
+  },
+  categoryCta: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(0, 76, 255, 0.08)',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 999,
+  },
+  categoryCtaText: {
+    fontFamily: fonts.semiBold,
+    fontSize: 12,
+    color: BLUE,
   },
   categoryHeroArt: {
+    width: 132,
     alignItems: 'center',
-    justifyContent: 'flex-end',
-    marginBottom: -4,
+    justifyContent: 'center',
+    zIndex: 1,
   },
   searchModal: {
     flex: 1,
