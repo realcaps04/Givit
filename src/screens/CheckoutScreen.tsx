@@ -21,6 +21,8 @@ const MUTED = '#8A8A96';
 const FIELD = '#F3F4F8';
 const DANGER = '#E11D48';
 
+const VISA_MARK = require('../../assets/brands/visa.png');
+
 export type CheckoutItem = {
   id: string;
   title: string;
@@ -217,12 +219,12 @@ function ContactlessIcon() {
 
 function VisaLogo() {
   return (
-    <Svg width={52} height={18} viewBox="0 0 72 24" fill="none">
-      <Path
-        d="M31.2 2.4h-5.2l-3.2 19.2h5.2L31.2 2.4Zm17 12.4 2.7-7.2 1.4 7.2h-4.1Zm5.2 6.8h4.7L54.4 2.4H50c-1 0-1.8.6-2.1 1.4L40.9 21.6h5.3l1-2.6h6.5l.7 2.6ZM25.5 2.4l-5 12.8-.5-2.6C19 9.6 16.2 6.4 13 5l4.6 16.6H23L30.8 2.4h-5.3ZM12.4 2.4H4.4L4.2 2.9c6.2 1.5 10.4 5.1 12.1 9.5L14.4 3.7c-.2-.8-1-1.3-2-1.3Z"
-        fill="#FFFFFF"
-      />
-    </Svg>
+    <Image
+      source={VISA_MARK}
+      style={{ width: 56, height: 18 }}
+      resizeMode="contain"
+      accessibilityLabel="Visa"
+    />
   );
 }
 
@@ -276,11 +278,24 @@ function PayPalLogo() {
 }
 
 function UpiLogo() {
+  // NPCI UPI fast-forward: three tricolor chevrons (saffron / white / green)
   return (
     <View style={styles.brandLogoRow}>
-      <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
-        <Path d="M4 18 12 3l8 15H4Z" fill="#097939" />
-        <Path d="M7 18 12 8.5 17 18H7Z" fill="#ED752E" />
+      <Svg width={28} height={16} viewBox="0 0 48 28" fill="none">
+        <Path
+          d="M0.8 1.2 14.2 14 0.8 26.8 5.6 26.8 19 14 5.6 1.2Z"
+          fill="#FF671F"
+        />
+        <Path
+          d="M13.2 1.2 26.6 14 13.2 26.8 18 26.8 31.4 14 18 1.2Z"
+          fill="#FFFFFF"
+          stroke="#C9CCD4"
+          strokeWidth={0.9}
+        />
+        <Path
+          d="M25.6 1.2 39 14 25.6 26.8 30.4 26.8 43.8 14 30.4 1.2Z"
+          fill="#097A4B"
+        />
       </Svg>
       <Text style={styles.upiText}>UPI</Text>
     </View>
@@ -1644,8 +1659,8 @@ const styles = StyleSheet.create({
   upiText: {
     fontFamily: fonts.bold,
     fontSize: 15,
-    color: '#097939',
-    letterSpacing: 0.5,
+    color: '#1A1A1A',
+    letterSpacing: 1.2,
   },
   upiBox: {
     marginBottom: 16,

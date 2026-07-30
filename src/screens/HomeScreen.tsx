@@ -29,6 +29,11 @@ import {
 import { TransitionHost, type TransitionDirection } from '../components/ScreenTransition';
 import { ProductDetailScreen, type DetailProduct } from './ProductDetailScreen';
 import { CheckoutScreen, type CheckoutItem } from './CheckoutScreen';
+import {
+  loadHomeNav,
+  saveHomeNav,
+  type HomeTabKey,
+} from '../navigation/routePersistence';
 
 const BLUE = '#004CFF';
 const BLUE_SOFT = 'rgba(0, 76, 255, 0.10)';
@@ -345,7 +350,7 @@ const PROMO_BANNERS: {
   },
 ];
 
-type TabKey = 'home' | 'categories' | 'exclusives' | 'profile';
+type TabKey = HomeTabKey;
 
 const TAB_ORDER: TabKey[] = ['home', 'categories', 'exclusives', 'profile'];
 
@@ -914,9 +919,60 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
   const [cartOpen, setCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CheckoutItem[]>([]);
   const [exclusiveDetail, setExclusiveDetail] = useState<ExclusiveCard | null>(null);
+  const [navReady, setNavReady] = useState(false);
   const inputRef = useRef<TextInputType>(null);
   const iconPulse = useRef(new Animated.Value(1)).current;
   const switchingRef = useRef(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const nav = await loadHomeNav();
+      if (cancelled) return;
+      setTab(nav.tab);
+      setCategory(nav.category);
+      setCartOpen(nav.cartOpen);
+      setSelectedProduct(
+        nav.productId ? ALL_PRODUCTS.find((p) => p.id === nav.productId) ?? null : null,
+      );
+      setExclusiveDetail(
+        nav.exclusiveId
+          ? EXCLUSIVE_CARDS.find((c) => c.id === nav.exclusiveId) ?? null
+          : null,
+      );
+      setCartItems(
+        nav.cart
+          .map((entry) => {
+            const product = ALL_PRODUCTS.find((p) => p.id === entry.id);
+            if (!product?.price) return null;
+            return {
+              id: product.id,
+              title: product.title,
+              price: product.price,
+              image: product.image,
+              qty: entry.qty,
+            } satisfies CheckoutItem;
+          })
+          .filter((item): item is CheckoutItem => !!item),
+      );
+      setNavReady(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!navReady) return;
+    void saveHomeNav({
+      tab,
+      category,
+      productId: selectedProduct?.id ?? null,
+      cartOpen,
+      exclusiveId: exclusiveDetail?.id ?? null,
+      cart: cartItems.map((item) => ({ id: item.id, qty: item.qty })),
+    });
+  }, [navReady, tab, category, selectedProduct, cartOpen, exclusiveDetail, cartItems]);
 
   const cartCount = useMemo(
     () => cartItems.reduce((sum, item) => sum + item.qty, 0),

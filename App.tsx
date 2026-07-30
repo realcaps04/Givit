@@ -27,7 +27,6 @@ import {
 } from './src/screens/PasswordRecoveryOtpScreen';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { UpdateAvailableModal } from './src/components/UpdateAvailableModal';
-import { HardRefreshButton } from './src/components/HardRefreshButton';
 import {
   TransitionHost,
   type TransitionDirection,
@@ -171,7 +170,6 @@ export default function App() {
         <TransitionHost routeKey={route} direction={navDirection}>
           {screen}
         </TransitionHost>
-        <HardRefreshButton route={route} />
         <UpdateAvailableModal
           update={update}
           onUpdate={update.applyUpdate}
