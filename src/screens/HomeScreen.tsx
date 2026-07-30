@@ -995,10 +995,8 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
         onRequestClose={closeSearch}
         statusBarTranslucent
       >
-        <View style={[styles.searchModal, { paddingTop: Math.max(insets.top, 10) }]}>
-          <Pressable style={styles.searchBackdrop} onPress={closeSearch} />
-
-          <View style={styles.searchSheet}>
+        <View style={styles.searchModal}>
+          <View style={[styles.searchSheet, { paddingTop: Math.max(insets.top, 10) }]}>
             <View style={styles.topRow}>
               <View style={[styles.searchWrap, styles.searchWrapExpanded]}>
                 <Pressable onPress={() => inputRef.current?.focus()} style={styles.searchIconBtn}>
@@ -1340,10 +1338,7 @@ const styles = StyleSheet.create({
   },
   searchModal: {
     flex: 1,
-    backgroundColor: 'rgba(10, 14, 30, 0.35)',
-  },
-  searchBackdrop: {
-    ...StyleSheet.absoluteFill,
+    backgroundColor: '#FFFFFF',
   },
   searchSheet: {
     flex: 1,
