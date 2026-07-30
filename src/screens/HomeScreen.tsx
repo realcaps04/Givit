@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import {
+  Image,
+  ImageBackground,
   Platform,
   Pressable,
   ScrollView,
@@ -7,9 +9,10 @@ import {
   Text,
   TextInput,
   View,
+  type ImageSourcePropType,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Circle, Path, Rect } from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 import { fonts } from '../theme';
 
 const BLUE = '#004CFF';
@@ -23,16 +26,46 @@ const CREAM_CARD = '#F7F0E4';
 
 const CATEGORIES = ['Gifts', 'Flowers', 'Fashion', 'Tech', 'Gourmet', 'Kids'];
 
-const HOT_SALES = [
-  { id: '1', title: 'Luxury Gift Box', price: '₹ 2,499', freeShip: true, tone: '#EEF2FF' },
-  { id: '2', title: 'Perfume Duo Set', price: '₹ 3,199', freeShip: true, tone: '#F3E8FF' },
-  { id: '3', title: 'Chocolate Tower', price: '₹ 1,299', freeShip: true, tone: '#FFE8F0' },
+type Product = {
+  id: string;
+  title: string;
+  price?: string;
+  freeShip?: boolean;
+  image: ImageSourcePropType;
+  tone?: string;
+};
+
+const HOT_SALES: Product[] = [
+  { id: '1', title: 'Festive Gift Stack', price: '₹ 2,499', freeShip: true, image: require('../../assets/products/p01.jpg') },
+  { id: '2', title: 'Pink Ribbon Box', price: '₹ 1,899', freeShip: true, image: require('../../assets/products/p02.jpg') },
+  { id: '3', title: 'Artisan Chocolates', price: '₹ 1,299', freeShip: true, image: require('../../assets/products/p03.jpg') },
+  { id: '4', title: 'Kraft & Bow Classic', price: '₹ 999', freeShip: true, image: require('../../assets/products/p04.jpg') },
+  { id: '5', title: 'Wrapped Surprises', price: '₹ 2,199', freeShip: true, image: require('../../assets/products/p05.jpg') },
+  { id: '6', title: 'Black Gold Luxe', price: '₹ 3,499', freeShip: true, image: require('../../assets/products/p06.jpg') },
 ];
 
-const RECENT = [
-  { id: 'r1', title: 'Smart Watch Gift', tone: PINK_CARD },
-  { id: 'r2', title: 'Desk Lamp Set', tone: CREAM_CARD },
+const MORE_GIFTS: Product[] = [
+  { id: 'm1', title: 'Beauty Gift Kit', price: '₹ 2,799', freeShip: true, image: require('../../assets/products/p07.jpg') },
+  { id: 'm2', title: 'Celebration Cake', price: '₹ 1,599', freeShip: false, image: require('../../assets/products/p08.jpg') },
+  { id: 'm3', title: 'Style Essentials', price: '₹ 4,299', freeShip: true, image: require('../../assets/products/p09.jpg') },
+  { id: 'm4', title: 'Weekend Treat Box', price: '₹ 1,149', freeShip: true, image: require('../../assets/products/p10.jpg') },
+  { id: 'm5', title: 'Soft Knit Gift', price: '₹ 1,999', freeShip: true, image: require('../../assets/products/p11.jpg') },
+  { id: 'm6', title: 'Travel Companion', price: '₹ 3,299', freeShip: true, image: require('../../assets/products/p12.jpg') },
+  { id: 'm7', title: 'Skincare Duo', price: '₹ 2,249', freeShip: true, image: require('../../assets/products/more01.jpg') },
+  { id: 'm8', title: 'Everyday Classic', price: '₹ 1,799', freeShip: false, image: require('../../assets/products/more02.jpg') },
+  { id: 'm9', title: 'Fragrance Mini', price: '₹ 2,599', freeShip: true, image: require('../../assets/products/more03.jpg') },
+  { id: 'm10', title: 'Camera Moments', price: '₹ 5,499', freeShip: true, image: require('../../assets/products/more04.jpg') },
+  { id: 'm11', title: 'Glow Essentials', price: '₹ 1,899', freeShip: true, image: require('../../assets/products/more05.jpg') },
+  { id: 'm12', title: 'Smart Watch Gift', price: '₹ 6,999', freeShip: true, image: require('../../assets/products/r01.jpg') },
 ];
+
+const RECENT: Product[] = [
+  { id: 'r1', title: 'Smart Watch Gift', image: require('../../assets/products/r01.jpg'), tone: PINK_CARD },
+  { id: 'r2', title: 'Studio Headphones', image: require('../../assets/products/r02.jpg'), tone: CREAM_CARD },
+  { id: 'r3', title: 'Sneaker Drop', image: require('../../assets/products/r03.jpg'), tone: '#E8F0FE' },
+];
+
+const BANNER_IMG = require('../../assets/products/banner.jpg');
 
 type TabKey = 'home' | 'bag' | 'favorites' | 'profile';
 
@@ -121,19 +154,8 @@ function TabIcon({ name, active }: { name: TabKey; active: boolean }) {
   );
 }
 
-function GiftThumb({ tone }: { tone: string }) {
-  return (
-    <View style={[styles.thumb, { backgroundColor: tone }]}>
-      <Svg width={48} height={48} viewBox="0 0 48 48" fill="none">
-        <Rect x="12" y="18" width="24" height="20" rx="3" fill={BLUE} opacity={0.85} />
-        <Path d="M24 18v20M12 27h24" stroke="#FFF" strokeWidth={2} strokeOpacity={0.5} />
-        <Path
-          d="M24 18c-4-6-8-5.5-8 0 0 2.8 4 5 8 7.2 4-2.2 8-4.4 8-7.2 0-5.5-4-6-8 0Z"
-          fill={BLUE}
-        />
-      </Svg>
-    </View>
-  );
+function ProductImage({ source, style }: { source: ImageSourcePropType; style?: object }) {
+  return <Image source={source} style={[styles.productImg, style]} resizeMode="cover" />;
 }
 
 export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
@@ -172,7 +194,8 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
             </Pressable>
           </View>
 
-          <View style={styles.banner}>
+          <ImageBackground source={BANNER_IMG} style={styles.banner} imageStyle={styles.bannerImage}>
+            <View style={styles.bannerOverlay} />
             <View style={styles.bannerCopy}>
               <Text style={styles.bannerEyebrow}>GIVIT WEEK</Text>
               <Text style={styles.bannerTitle}>40% OFF{'\n'}celebration gifts</Text>
@@ -180,11 +203,8 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                 <Text style={styles.bannerPillText}>FREE SHIPPING</Text>
               </View>
             </View>
-            <View style={styles.bannerArt}>
-              <GiftThumb tone="rgba(255,255,255,0.2)" />
-            </View>
             <Text style={styles.bannerFoot}>Valid this week · Selected gift sets</Text>
-          </View>
+          </ImageBackground>
 
           <ScrollView
             horizontal
@@ -221,7 +241,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
           >
             {HOT_SALES.map((item) => (
               <View key={item.id} style={styles.saleCard}>
-                <GiftThumb tone={item.tone} />
+                <ProductImage source={item.image} />
                 <Text style={styles.salePrice}>{item.price}</Text>
                 <Text style={styles.saleTitle} numberOfLines={2}>
                   {item.title}
@@ -230,6 +250,23 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
               </View>
             ))}
           </ScrollView>
+
+          <View style={[styles.sectionHead, { marginTop: 22 }]}>
+            <Text style={styles.sectionTitle}>More gifts</Text>
+          </View>
+
+          <View style={styles.moreGrid}>
+            {MORE_GIFTS.map((item) => (
+              <View key={item.id} style={styles.moreCard}>
+                <ProductImage source={item.image} style={styles.moreImg} />
+                <Text style={styles.salePrice}>{item.price}</Text>
+                <Text style={styles.saleTitle} numberOfLines={2}>
+                  {item.title}
+                </Text>
+                {item.freeShip ? <Text style={styles.freeShip}>Free shipping</Text> : null}
+              </View>
+            ))}
+          </View>
 
           <View style={[styles.sectionHead, { marginTop: 22 }]}>
             <Text style={styles.sectionTitle}>Recently viewed</Text>
@@ -245,7 +282,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                 <Pressable style={styles.favBtn} accessibilityRole="button">
                   <HeartIcon filled color={BLUE} />
                 </Pressable>
-                <GiftThumb tone="rgba(255,255,255,0.55)" />
+                <ProductImage source={item.image} style={styles.recentImg} />
                 <Text style={styles.recentTitle}>{item.title}</Text>
               </View>
             ))}
@@ -344,13 +381,20 @@ const styles = StyleSheet.create({
   },
   banner: {
     borderRadius: 22,
-    backgroundColor: BLUE,
-    padding: 18,
     minHeight: 168,
     overflow: 'hidden',
     marginBottom: 16,
+    padding: 18,
+    justifyContent: 'space-between',
   },
-  bannerCopy: { maxWidth: '62%', zIndex: 1 },
+  bannerImage: {
+    borderRadius: 22,
+  },
+  bannerOverlay: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(0, 40, 140, 0.55)',
+  },
+  bannerCopy: { maxWidth: '72%', zIndex: 1 },
   bannerEyebrow: {
     fontFamily: fonts.semiBold,
     fontSize: 12,
@@ -377,17 +421,12 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: BLUE,
   },
-  bannerArt: {
-    position: 'absolute',
-    right: 8,
-    top: 28,
-    opacity: 0.95,
-  },
   bannerFoot: {
     marginTop: 18,
     fontFamily: fonts.regular,
     fontSize: 11,
-    color: 'rgba(255,255,255,0.72)',
+    color: 'rgba(255,255,255,0.85)',
+    zIndex: 1,
   },
   cats: {
     gap: 8,
@@ -450,12 +489,36 @@ const styles = StyleSheet.create({
           elevation: 3,
         }),
   },
-  thumb: {
-    height: 96,
+  productImg: {
+    width: '100%',
+    height: 110,
     borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: 10,
+    backgroundColor: FIELD,
+  },
+  moreGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: 14,
+  },
+  moreCard: {
+    width: '48%',
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    padding: 10,
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 8px 22px rgba(0,0,0,0.06)' } as object)
+      : {
+          shadowColor: '#000',
+          shadowOpacity: 0.05,
+          shadowRadius: 10,
+          shadowOffset: { width: 0, height: 4 },
+          elevation: 2,
+        }),
+  },
+  moreImg: {
+    height: 132,
   },
   salePrice: {
     fontFamily: fonts.bold,
@@ -479,6 +542,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 14,
     minHeight: 190,
+  },
+  recentImg: {
+    height: 120,
+    marginBottom: 0,
   },
   favBtn: {
     position: 'absolute',
