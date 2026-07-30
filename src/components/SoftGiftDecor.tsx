@@ -18,7 +18,7 @@ type Floater = {
   kind: ShapeKind;
   size: number;
   x: number;
-  startY: number;
+  spawnOffset: number;
   driftX: number;
   duration: number;
   delay: number;
@@ -113,7 +113,7 @@ function FlowingPiece({ item, height }: { item: Floater; height: number }) {
   useEffect(() => {
     Animated.timing(appear, {
       toValue: 1,
-      duration: 900,
+      duration: 600,
       delay: item.delay,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: useNative,
@@ -139,11 +139,13 @@ function FlowingPiece({ item, height }: { item: Floater; height: number }) {
     };
   }, [appear, progress, item.delay, item.duration]);
 
-  const travel = Math.max(height * 0.55, 220);
+  // Always enter from below the fold, then rise off the top
+  const fromY = height + 24 + item.spawnOffset;
+  const toY = -item.size - 48;
 
   const translateY = progress.interpolate({
     inputRange: [0, 1],
-    outputRange: [item.startY, item.startY - travel],
+    outputRange: [fromY, toY],
   });
 
   const translateX = progress.interpolate({
@@ -157,7 +159,7 @@ function FlowingPiece({ item, height }: { item: Floater; height: number }) {
   });
 
   const fade = progress.interpolate({
-    inputRange: [0, 0.12, 0.75, 1],
+    inputRange: [0, 0.08, 0.78, 1],
     outputRange: [0, item.opacity, item.opacity * 0.85, 0],
   });
 
@@ -167,6 +169,7 @@ function FlowingPiece({ item, height }: { item: Floater; height: number }) {
       style={[
         styles.piece,
         {
+          top: 0,
           left: `${item.x}%`,
           opacity: Animated.multiply(appear, fade),
           transform: [{ translateY }, { translateX }, { rotate }],
@@ -188,10 +191,10 @@ function buildFloaters(count: number): Floater[] {
       kind: kinds[i % kinds.length],
       size: sizes[i % sizes.length],
       x: 6 + col * 20 + ((i * 7) % 9) - 4,
-      startY: 120 + ((i * 47) % 280),
+      spawnOffset: (i % 6) * 36,
       driftX: i % 2 === 0 ? 18 + (i % 5) * 4 : -(16 + (i % 4) * 5),
       duration: 14000 + (i % 6) * 2200,
-      delay: (i % 8) * 350,
+      delay: (i % 8) * 450,
       opacity: 0.35 + (i % 5) * 0.08,
       rotate: (i % 7) * 8 - 20,
     };
