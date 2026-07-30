@@ -1451,7 +1451,6 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                 showsVerticalScrollIndicator={false}
               >
                 <View style={styles.categoriesHeader}>
-                  <Text style={styles.categoriesEyebrow}>EXPLORE</Text>
                   <Text style={styles.categoriesHeading}>Categories</Text>
                   <Text style={styles.categoriesLead}>
                     Discover thoughtfully curated gifts by mood and moment
@@ -1812,13 +1811,6 @@ const styles = StyleSheet.create({
   },
   categoriesHeader: {
     marginBottom: 18,
-  },
-  categoriesEyebrow: {
-    fontFamily: fonts.semiBold,
-    fontSize: 11,
-    letterSpacing: 2.2,
-    color: BLUE,
-    marginBottom: 6,
   },
   categoriesHeading: {
     fontFamily: fonts.display,

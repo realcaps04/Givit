@@ -1,4 +1,4 @@
-import { Platform, Pressable, StyleSheet, Text, View, type TextStyle } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowRight } from '../components/ArrowRight';
 import { GiftLogo } from '../components/GiftLogo';
@@ -6,7 +6,6 @@ import { SoftGiftDecor } from '../components/SoftGiftDecor';
 import { fonts } from '../theme';
 
 const BLUE = '#004CFF';
-const TITLE = '#000000';
 const BODY = '#1A1A1A';
 const MUTED = '#8A8A8A';
 
@@ -14,15 +13,6 @@ type WelcomeScreenProps = {
   onGetStarted: () => void;
   onHaveAccount: () => void;
 };
-
-const titleWeight: TextStyle =
-  Platform.OS === 'web'
-    ? {
-        // @ts-expect-error web-only
-        WebkitTextStrokeWidth: 0.4,
-        WebkitTextStrokeColor: TITLE,
-      }
-    : {};
 
 export function WelcomeScreen({ onGetStarted, onHaveAccount }: WelcomeScreenProps) {
   const insets = useSafeAreaInsets();
@@ -41,7 +31,6 @@ export function WelcomeScreen({ onGetStarted, onHaveAccount }: WelcomeScreenProp
 
       <View style={styles.topBlock}>
         <GiftLogo size={72} />
-        <Text style={[styles.title, titleWeight]}>Givit</Text>
         <Text style={styles.subtitle}>
           Beautiful gifts for every{'\n'}
           story worth celebrating
@@ -89,17 +78,8 @@ const styles = StyleSheet.create({
     paddingTop: 28,
     zIndex: 1,
   },
-  title: {
-    marginTop: 12,
-    fontFamily: fonts.display,
-    fontSize: 32,
-    lineHeight: 38,
-    letterSpacing: 0.2,
-    color: TITLE,
-    textAlign: 'center',
-  },
   subtitle: {
-    marginTop: 6,
+    marginTop: 14,
     fontFamily: fonts.regular,
     fontSize: 15,
     lineHeight: 22,
