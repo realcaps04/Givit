@@ -50,7 +50,24 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
-          navigator.serviceWorker.register('/sw.js').catch(function () {});
+          navigator.serviceWorker
+            .register('/sw.js')
+            .then(function (reg) {
+              reg.update();
+              setInterval(function () {
+                reg.update();
+              }, 60 * 1000);
+              reg.addEventListener('updatefound', function () {
+                var installing = reg.installing;
+                if (!installing) return;
+                installing.addEventListener('statechange', function () {
+                  if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+                    window.dispatchEvent(new Event('givit-sw-update'));
+                  }
+                });
+              });
+            })
+            .catch(function () {});
         });
       }
     </script>

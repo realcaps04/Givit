@@ -19,6 +19,13 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { WelcomeScreen } from './src/screens/WelcomeScreen';
 import { CreateAccountScreen } from './src/screens/CreateAccountScreen';
+import { UpdateAvailableModal } from './src/components/UpdateAvailableModal';
+import { HardRefreshButton } from './src/components/HardRefreshButton';
+import {
+  TransitionHost,
+  type TransitionDirection,
+} from './src/components/ScreenTransition';
+import { useAppUpdate } from './src/hooks/useAppUpdate';
 import { colors, fonts } from './src/theme';
 
 if (Platform.OS !== 'web') {
@@ -41,6 +48,8 @@ export default function App() {
   });
   const [timedOut, setTimedOut] = useState(false);
   const [route, setRoute] = useState<Route>('boot');
+  const [navDirection, setNavDirection] = useState<TransitionDirection>('none');
+  const update = useAppUpdate();
 
   useEffect(() => {
     const timer = setTimeout(() => setTimedOut(true), 2500);
@@ -51,11 +60,17 @@ export default function App() {
 
   useEffect(() => {
     if (!fontsReady) return;
+    setNavDirection('none');
     setRoute('welcome');
     if (Platform.OS !== 'web') {
       SplashScreen.hideAsync().catch(() => undefined);
     }
   }, [fontsReady]);
+
+  const goTo = (next: Route, direction: TransitionDirection) => {
+    setNavDirection(direction);
+    setRoute(next);
+  };
 
   if (!fontsReady || route === 'boot') {
     return (
@@ -65,33 +80,42 @@ export default function App() {
     );
   }
 
+  const screen =
+    route === 'welcome' ? (
+      <WelcomeScreen
+        onGetStarted={() => goTo('signup', 'forward')}
+        onHaveAccount={() => goTo('login', 'forward')}
+      />
+    ) : route === 'signup' ? (
+      <CreateAccountScreen
+        onDone={() => goTo('welcome', 'back')}
+        onCancel={() => goTo('welcome', 'back')}
+        onSkip={() => goTo('welcome', 'back')}
+        onGoogle={() => {
+          Alert.alert('Google', 'Google sign-in will be available soon.');
+        }}
+      />
+    ) : (
+      <PlaceholderScreen
+        title="Welcome back"
+        subtitle="Login screen coming next."
+        onBack={() => goTo('welcome', 'back')}
+      />
+    );
+
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
         <StatusBar style="dark" />
-        {route === 'welcome' && (
-          <WelcomeScreen
-            onGetStarted={() => setRoute('signup')}
-            onHaveAccount={() => setRoute('login')}
-          />
-        )}
-        {route === 'signup' && (
-          <CreateAccountScreen
-            onDone={() => setRoute('welcome')}
-            onCancel={() => setRoute('welcome')}
-            onSkip={() => setRoute('welcome')}
-            onGoogle={() => {
-              Alert.alert('Google', 'Google sign-in will be available soon.');
-            }}
-          />
-        )}
-        {route === 'login' && (
-          <PlaceholderScreen
-            title="Welcome back"
-            subtitle="Login screen coming next."
-            onBack={() => setRoute('welcome')}
-          />
-        )}
+        <TransitionHost routeKey={route} direction={navDirection}>
+          {screen}
+        </TransitionHost>
+        <HardRefreshButton />
+        <UpdateAvailableModal
+          update={update}
+          onUpdate={update.applyUpdate}
+          onLater={update.dismiss}
+        />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

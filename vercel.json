@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npx expo export -p web",
+  "buildCommand": "npm run stamp:version && npx expo export -p web",
   "outputDirectory": "dist",
   "devCommand": "npx expo start --web",
   "installCommand": "npm install --legacy-peer-deps",
@@ -14,6 +14,13 @@
       ]
     },
     {
+      "source": "/version.json",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
+        { "key": "Content-Type", "value": "application/json" }
+      ]
+    },
+    {
       "source": "/manifest.json",
       "headers": [
         { "key": "Content-Type", "value": "application/manifest+json" }
@@ -22,7 +29,7 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!manifest\\.json|sw\\.js|favicon\\.png|logo192\\.png|logo512\\.png|.*\\..*).*)",
+      "source": "/((?!manifest\\.json|version\\.json|sw\\.js|favicon\\.png|logo192\\.png|logo512\\.png|.*\\..*).*)",
       "destination": "/index.html"
     }
   ]

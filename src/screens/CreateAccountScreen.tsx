@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path, Circle, Ellipse } from 'react-native-svg';
+import { CountryFlag } from '../components/CountryFlag';
 import { fonts } from '../theme';
 
 const BLUE = '#004CFF';
@@ -27,29 +28,28 @@ type Country = {
   code: string;
   name: string;
   dial: string;
-  flag: string;
   phoneLength: number;
 };
 
 const COUNTRIES: Country[] = [
-  { code: 'IN', name: 'India', dial: '+91', flag: '🇮🇳', phoneLength: 10 },
-  { code: 'US', name: 'United States', dial: '+1', flag: '🇺🇸', phoneLength: 10 },
-  { code: 'GB', name: 'United Kingdom', dial: '+44', flag: '🇬🇧', phoneLength: 10 },
-  { code: 'AE', name: 'United Arab Emirates', dial: '+971', flag: '🇦🇪', phoneLength: 9 },
-  { code: 'AU', name: 'Australia', dial: '+61', flag: '🇦🇺', phoneLength: 9 },
-  { code: 'CA', name: 'Canada', dial: '+1', flag: '🇨🇦', phoneLength: 10 },
-  { code: 'SG', name: 'Singapore', dial: '+65', flag: '🇸🇬', phoneLength: 8 },
-  { code: 'DE', name: 'Germany', dial: '+49', flag: '🇩🇪', phoneLength: 11 },
-  { code: 'FR', name: 'France', dial: '+33', flag: '🇫🇷', phoneLength: 9 },
-  { code: 'JP', name: 'Japan', dial: '+81', flag: '🇯🇵', phoneLength: 10 },
-  { code: 'KR', name: 'South Korea', dial: '+82', flag: '🇰🇷', phoneLength: 10 },
-  { code: 'SA', name: 'Saudi Arabia', dial: '+966', flag: '🇸🇦', phoneLength: 9 },
-  { code: 'PK', name: 'Pakistan', dial: '+92', flag: '🇵🇰', phoneLength: 10 },
-  { code: 'BD', name: 'Bangladesh', dial: '+880', flag: '🇧🇩', phoneLength: 10 },
-  { code: 'LK', name: 'Sri Lanka', dial: '+94', flag: '🇱🇰', phoneLength: 9 },
-  { code: 'NP', name: 'Nepal', dial: '+977', flag: '🇳🇵', phoneLength: 10 },
-  { code: 'MY', name: 'Malaysia', dial: '+60', flag: '🇲🇾', phoneLength: 9 },
-  { code: 'NZ', name: 'New Zealand', dial: '+64', flag: '🇳🇿', phoneLength: 9 },
+  { code: 'IN', name: 'India', dial: '+91', phoneLength: 10 },
+  { code: 'US', name: 'United States', dial: '+1', phoneLength: 10 },
+  { code: 'GB', name: 'United Kingdom', dial: '+44', phoneLength: 10 },
+  { code: 'AE', name: 'United Arab Emirates', dial: '+971', phoneLength: 9 },
+  { code: 'AU', name: 'Australia', dial: '+61', phoneLength: 9 },
+  { code: 'CA', name: 'Canada', dial: '+1', phoneLength: 10 },
+  { code: 'SG', name: 'Singapore', dial: '+65', phoneLength: 8 },
+  { code: 'DE', name: 'Germany', dial: '+49', phoneLength: 11 },
+  { code: 'FR', name: 'France', dial: '+33', phoneLength: 9 },
+  { code: 'JP', name: 'Japan', dial: '+81', phoneLength: 10 },
+  { code: 'KR', name: 'South Korea', dial: '+82', phoneLength: 10 },
+  { code: 'SA', name: 'Saudi Arabia', dial: '+966', phoneLength: 9 },
+  { code: 'PK', name: 'Pakistan', dial: '+92', phoneLength: 10 },
+  { code: 'BD', name: 'Bangladesh', dial: '+880', phoneLength: 10 },
+  { code: 'LK', name: 'Sri Lanka', dial: '+94', phoneLength: 9 },
+  { code: 'NP', name: 'Nepal', dial: '+977', phoneLength: 10 },
+  { code: 'MY', name: 'Malaysia', dial: '+60', phoneLength: 9 },
+  { code: 'NZ', name: 'New Zealand', dial: '+64', phoneLength: 9 },
 ];
 
 type CreateAccountScreenProps = {
@@ -388,7 +388,7 @@ export function CreateAccountScreen({
                 accessibilityLabel={`Country code ${country.name}`}
                 onPress={() => setPickerOpen(true)}
               >
-                <Text style={styles.flag}>{country.flag}</Text>
+                <CountryFlag code={country.code} width={24} height={16} />
                 <Text style={styles.dial}>{dialPrefix}</Text>
                 <Text style={styles.chevron}>▾</Text>
               </Pressable>
@@ -464,7 +464,7 @@ export function CreateAccountScreen({
                       pressed && styles.pressed,
                     ]}
                   >
-                    <Text style={styles.flag}>{item.flag}</Text>
+                    <CountryFlag code={item.code} width={28} height={18} />
                     <View style={styles.countryMeta}>
                       <Text style={styles.countryName}>{item.name}</Text>
                       <Text style={styles.countryDial}>{item.dial}</Text>
@@ -585,10 +585,6 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingRight: 8,
     paddingVertical: 8,
-  },
-  flag: {
-    fontSize: 20,
-    ...(Platform.OS === 'web' ? ({ lineHeight: 22 } as object) : null),
   },
   dial: {
     fontFamily: fonts.medium,

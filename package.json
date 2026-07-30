@@ -1,6 +1,6 @@
 {
   "name": "givit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "index.ts",
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
@@ -34,8 +34,9 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "generate:logo": "node scripts/generate-logo.js",
-    "build:web": "expo export -p web",
-    "predeploy": "expo export -p web",
+    "stamp:version": "node scripts/stamp-version.js",
+    "build:web": "npm run stamp:version && expo export -p web",
+    "predeploy": "npm run build:web",
     "deploy": "node -e \"require('fs').writeFileSync('dist/.nojekyll',''); require('fs').copyFileSync('dist/index.html','dist/404.html')\" && gh-pages --nojekyll -d dist"
   },
   "private": true
