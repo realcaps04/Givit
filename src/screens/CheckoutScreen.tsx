@@ -35,7 +35,7 @@ const UPI_APPS: { id: UpiAppId; label: string }[] = [
   { id: 'whatsapp', label: 'WhatsApp' },
   { id: 'jiopay', label: 'JioPay' },
   { id: 'mobikwik', label: 'MobiKwik' },
-  { id: 'upi', label: 'UPI ID' },
+  { id: 'upi', label: 'BHIM UPI' },
 ];
 
 export type CheckoutItem = {
@@ -855,12 +855,14 @@ export function CheckoutScreen({
                     accessibilityRole="button"
                     accessibilityLabel={w.label}
                   >
-                    <View style={styles.walletIconWrap}>
-                      <PaymentBrandIcon id={w.id} size={28} />
+                    <View style={[styles.walletIconWrap, w.id === 'upi' && styles.walletIconWrapUpi]}>
+                      <PaymentBrandIcon id={w.id} size={w.id === 'upi' ? 22 : 28} />
                     </View>
-                    <Text style={[styles.walletLabel, active && styles.walletLabelActive]} numberOfLines={1}>
-                      {w.label}
-                    </Text>
+                    {w.id === 'upi' ? null : (
+                      <Text style={[styles.walletLabel, active && styles.walletLabelActive]} numberOfLines={1}>
+                        {w.label}
+                      </Text>
+                    )}
                   </Pressable>
                 );
               })}
@@ -1692,12 +1694,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 76, 255, 0.06)',
   },
   walletIconWrap: {
-    width: 36,
+    width: 40,
     height: 36,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+  },
+  walletIconWrapUpi: {
+    width: '100%',
+    height: 36,
+    backgroundColor: 'transparent',
+    borderRadius: 0,
   },
   walletLabel: {
     fontFamily: fonts.medium,
