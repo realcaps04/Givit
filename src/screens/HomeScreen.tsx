@@ -16,9 +16,15 @@ import {
   type ImageSourcePropType,
   type TextInput as TextInputType,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { fonts } from '../theme';
+import {
+  CategoryIllustration,
+  type CategoryIllustrationId,
+} from '../components/CategoryIllustrations';
+import { TransitionHost, type TransitionDirection } from '../components/ScreenTransition';
 import { ProductDetailScreen, type DetailProduct } from './ProductDetailScreen';
 
 const BLUE = '#004CFF';
@@ -33,14 +39,44 @@ const useNative = Platform.OS !== 'web';
 
 const CATEGORIES = ['Gifts', 'Flowers', 'Fashion', 'Tech', 'Gourmet', 'Kids'];
 
-const CATEGORY_CARDS = [
-  { id: 'gifts', title: 'Gifts', subtitle: 'Curated boxes & surprises', tone: '#E8F0FE', image: require('../../assets/products/p01.jpg') },
-  { id: 'flowers', title: 'Flowers', subtitle: 'Bouquets & fresh blooms', tone: '#F8E8EE', image: require('../../assets/products/p02.jpg') },
-  { id: 'fashion', title: 'Fashion', subtitle: 'Style essentials to gift', tone: '#F7F0E4', image: require('../../assets/products/p09.jpg') },
-  { id: 'tech', title: 'Tech', subtitle: 'Gadgets & smart picks', tone: '#EAF7F0', image: require('../../assets/products/r01.jpg') },
-  { id: 'gourmet', title: 'Gourmet', subtitle: 'Treats & hampers', tone: '#FFF1E6', image: require('../../assets/products/p03.jpg') },
-  { id: 'kids', title: 'Kids', subtitle: 'Playful gifts for little ones', tone: '#F0E8FF', image: require('../../assets/products/p05.jpg') },
-] as const;
+const CATEGORY_CARDS: {
+  id: CategoryIllustrationId;
+  title: string;
+  colors: readonly [string, string];
+}[] = [
+  {
+    id: 'tech',
+    title: 'Tech',
+    colors: ['#D9ECFF', '#F4F9FF'],
+  },
+  {
+    id: 'fashion',
+    title: 'Fashion',
+    colors: ['#D8F5E8', '#F3FBF7'],
+  },
+  {
+    id: 'flowers',
+    title: 'Flowers',
+    colors: ['#F8DDE8', '#FDF4F8'],
+  },
+  {
+    id: 'gourmet',
+    title: 'Gourmet',
+    colors: ['#FFE4CC', '#FFF8F0'],
+  },
+  {
+    id: 'kids',
+    title: 'Kids',
+    colors: ['#E8DEFF', '#F7F3FF'],
+  },
+  {
+    id: 'gifts',
+    title: 'Gifts',
+    colors: ['#D6E4FF', '#F2F6FF'],
+  },
+];
+
+const CATEGORY_SEARCH_PLACEHOLDER = 'What you gonna buy today?';
 
 const SEARCH_PLACEHOLDER = 'Search Fashion, Tech, Gifts and much more';
 
@@ -107,6 +143,8 @@ const BANNER_IMG = require('../../assets/products/banner.jpg');
 
 type TabKey = 'home' | 'categories' | 'favorites' | 'profile';
 
+const TAB_ORDER: TabKey[] = ['home', 'categories', 'favorites', 'profile'];
+
 const ALL_PRODUCTS: Product[] = [...FEATURED, ...HOT_SALES, ...MORE_GIFTS, ...RECENT];
 
 function toDetailProduct(product: Product): DetailProduct {
@@ -151,6 +189,20 @@ function CartIcon() {
       />
       <Circle cx="10" cy="20" r="1.4" fill={TEXT} />
       <Circle cx="17" cy="20" r="1.4" fill={TEXT} />
+    </Svg>
+  );
+}
+
+function BellIcon() {
+  return (
+    <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M6 9a6 6 0 1 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9Z"
+        stroke={TEXT}
+        strokeWidth={1.8}
+        strokeLinejoin="round"
+      />
+      <Path d="M10 18.5a2 2 0 0 0 4 0" stroke={TEXT} strokeWidth={1.8} strokeLinecap="round" />
     </Svg>
   );
 }
@@ -242,6 +294,7 @@ function FavButton({
 export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
   const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<TabKey>('home');
+  const [tabDirection, setTabDirection] = useState<TransitionDirection>('none');
   const [category, setCategory] = useState('Gifts');
   const [query, setQuery] = useState('');
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
@@ -250,6 +303,19 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
   const [cartCount, setCartCount] = useState(0);
   const inputRef = useRef<TextInputType>(null);
   const iconPulse = useRef(new Animated.Value(1)).current;
+  const switchingRef = useRef(false);
+
+  const switchTab = (next: TabKey) => {
+    if (next === tab || searchOpen || switchingRef.current) return;
+    const from = TAB_ORDER.indexOf(tab);
+    const to = TAB_ORDER.indexOf(next);
+    setTabDirection(to > from ? 'forward' : 'back');
+    switchingRef.current = true;
+    setTab(next);
+    setTimeout(() => {
+      switchingRef.current = false;
+    }, 320);
+  };
 
   const toggleFavorite = (id: string) => {
     setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -272,8 +338,31 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
   const filteredSuggestions = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return SEARCH_SUGGESTIONS;
-    return SEARCH_SUGGESTIONS.filter((s) => s.toLowerCase().includes(q));
+    const fromSuggestions = SEARCH_SUGGESTIONS.filter((s) => s.toLowerCase().includes(q));
+    const fromProducts = ALL_PRODUCTS.map((p) => p.title).filter(
+      (title) => title.toLowerCase().includes(q) && !fromSuggestions.some((s) => s.toLowerCase() === title.toLowerCase()),
+    );
+    return [...fromSuggestions, ...fromProducts];
   }, [query]);
+
+  const noSearchMatch = query.trim().length > 0 && filteredSuggestions.length === 0;
+
+  const submitSearchRequest = (type: 'add' | 'ask') => {
+    const term = query.trim();
+    if (!term) return;
+    if (type === 'add') {
+      Alert.alert(
+        'Request submitted',
+        `We’ll look into adding “${term}” to Givit. Thanks for the suggestion!`,
+      );
+    } else {
+      Alert.alert(
+        'Availability check',
+        `We’ve noted your interest in “${term}”. We’ll let you know if it becomes available.`,
+      );
+    }
+    closeSearch();
+  };
 
   const openSearch = () => {
     Animated.sequence([
@@ -318,245 +407,276 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
 
   return (
     <View style={[styles.root, { paddingTop: Math.max(insets.top, 10) }]}>
-      {tab === 'home' ? (
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          scrollEnabled={!searchOpen}
-        >
-          <View style={styles.topRow}>
-            <Pressable onPress={openSearch} style={styles.searchWrap}>
-              <Animated.View style={[styles.searchIconBtn, { transform: [{ scale: iconPulse }] }]}>
-                <SearchIcon />
-              </Animated.View>
-              <Text style={styles.placeholderText} numberOfLines={1} ellipsizeMode="tail">
-                {query.trim() || SEARCH_PLACEHOLDER}
-              </Text>
-            </Pressable>
-
-            <Pressable
-              style={styles.cartBtn}
-              accessibilityRole="button"
-              accessibilityLabel="Cart"
-              onPress={() => Alert.alert('Cart', cartCount ? `${cartCount} item(s) in cart` : 'Your cart is empty')}
+      <View style={styles.tabContent}>
+        <TransitionHost routeKey={tab} direction={tabDirection}>
+          {tab === 'home' ? (
+            <ScrollView
+              style={styles.scroll}
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              scrollEnabled={!searchOpen}
             >
-              <CartIcon />
-              {cartCount > 0 ? (
-                <View style={styles.cartBadge}>
-                  <Text style={styles.cartBadgeText}>{cartCount > 9 ? '9+' : cartCount}</Text>
-                </View>
-              ) : null}
-            </Pressable>
-          </View>
-
-          <ImageBackground source={BANNER_IMG} style={styles.banner} imageStyle={styles.bannerImage}>
-            <View style={styles.bannerOverlay} />
-            <View style={styles.bannerCopy}>
-              <Text style={styles.bannerEyebrow}>GIVIT WEEK</Text>
-              <Text style={styles.bannerTitle}>40% OFF{'\n'}celebration gifts</Text>
-              <View style={styles.bannerPill}>
-                <Text style={styles.bannerPillText}>FREE SHIPPING</Text>
-              </View>
-            </View>
-            <Text style={styles.bannerFoot}>Valid this week · Selected gift sets</Text>
-          </ImageBackground>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.cats}
-          >
-            {CATEGORIES.map((c) => {
-              const active = c === category;
-              return (
-                <Pressable
-                  key={c}
-                  onPress={() => setCategory(c)}
-                  style={[styles.catChip, active && styles.catChipActive]}
-                >
-                  <Text style={[styles.catLabel, active && styles.catLabelActive]}>{c}</Text>
+              <View style={styles.topRow}>
+                <Pressable onPress={openSearch} style={styles.searchWrap}>
+                  <Animated.View style={[styles.searchIconBtn, { transform: [{ scale: iconPulse }] }]}>
+                    <SearchIcon />
+                  </Animated.View>
+                  <Text style={styles.placeholderText} numberOfLines={1} ellipsizeMode="tail">
+                    {query.trim() || SEARCH_PLACEHOLDER}
+                  </Text>
                 </Pressable>
-              );
-            })}
-          </ScrollView>
 
-          <View style={styles.sectionHead}>
-            <Text style={styles.sectionTitle}>Featured</Text>
-            <View style={styles.dots}>
-              <View style={[styles.dot, styles.dotActive]} />
-              <View style={styles.dot} />
-              <View style={styles.dot} />
+                <View style={styles.topActions}>
+                  <Pressable
+                    style={styles.cartBtn}
+                    accessibilityRole="button"
+                    accessibilityLabel="Cart"
+                    onPress={() =>
+                      Alert.alert(
+                        'Cart',
+                        cartCount ? `${cartCount} item(s) in cart` : 'Your cart is empty',
+                      )
+                    }
+                  >
+                    <CartIcon />
+                    {cartCount > 0 ? (
+                      <View style={styles.cartBadge}>
+                        <Text style={styles.cartBadgeText}>{cartCount > 9 ? '9+' : cartCount}</Text>
+                      </View>
+                    ) : null}
+                  </Pressable>
+                  <Pressable
+                    style={styles.bellBtn}
+                    accessibilityRole="button"
+                    accessibilityLabel="Notifications"
+                    onPress={() => Alert.alert('Notifications', 'You’re all caught up.')}
+                  >
+                    <BellIcon />
+                    <View style={styles.bellDot} />
+                  </Pressable>
+                </View>
+              </View>
+
+              <ImageBackground source={BANNER_IMG} style={styles.banner} imageStyle={styles.bannerImage}>
+                <View style={styles.bannerOverlay} />
+                <View style={styles.bannerCopy}>
+                  <Text style={styles.bannerEyebrow}>GIVIT WEEK</Text>
+                  <Text style={styles.bannerTitle}>40% OFF{'\n'}celebration gifts</Text>
+                  <View style={styles.bannerPill}>
+                    <Text style={styles.bannerPillText}>FREE SHIPPING</Text>
+                  </View>
+                </View>
+                <Text style={styles.bannerFoot}>Valid this week · Selected gift sets</Text>
+              </ImageBackground>
+
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.cats}
+              >
+                {CATEGORIES.map((c) => {
+                  const active = c === category;
+                  return (
+                    <Pressable
+                      key={c}
+                      onPress={() => setCategory(c)}
+                      style={[styles.catChip, active && styles.catChipActive]}
+                    >
+                      <Text style={[styles.catLabel, active && styles.catLabelActive]}>{c}</Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+
+              <View style={styles.sectionHead}>
+                <Text style={styles.sectionTitle}>Featured</Text>
+                <View style={styles.dots}>
+                  <View style={[styles.dot, styles.dotActive]} />
+                  <View style={styles.dot} />
+                  <View style={styles.dot} />
+                </View>
+              </View>
+
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.cardsRow}
+              >
+                {FEATURED.map((item) => (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => openProduct(item)}
+                    style={({ pressed }) => [styles.featuredCard, pressed && styles.pressed]}
+                  >
+                    <View style={styles.imageWrap}>
+                      <ProductImage source={item.image} style={styles.featuredImg} />
+                      <FavButton
+                        active={!!favorites[item.id]}
+                        onPress={() => toggleFavorite(item.id)}
+                      />
+                    </View>
+                    <View style={styles.featuredBadge}>
+                      <Text style={styles.featuredBadgeText}>Featured</Text>
+                    </View>
+                    <Text style={styles.salePrice}>{item.price}</Text>
+                    <Text style={styles.saleTitle} numberOfLines={2}>
+                      {item.title}
+                    </Text>
+                    {item.freeShip ? <Text style={styles.freeShip}>Free shipping</Text> : null}
+                  </Pressable>
+                ))}
+              </ScrollView>
+
+              <View style={styles.sectionHead}>
+                <Text style={styles.sectionTitle}>Hot sales</Text>
+                <View style={styles.dots}>
+                  <View style={[styles.dot, styles.dotActive]} />
+                  <View style={styles.dot} />
+                  <View style={styles.dot} />
+                </View>
+              </View>
+
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.cardsRow}
+              >
+                {HOT_SALES.map((item) => (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => openProduct(item)}
+                    style={({ pressed }) => [styles.saleCard, pressed && styles.pressed]}
+                  >
+                    <View style={styles.imageWrap}>
+                      <ProductImage source={item.image} />
+                      <FavButton
+                        active={!!favorites[item.id]}
+                        onPress={() => toggleFavorite(item.id)}
+                      />
+                    </View>
+                    <Text style={styles.salePrice}>{item.price}</Text>
+                    <Text style={styles.saleTitle} numberOfLines={2}>
+                      {item.title}
+                    </Text>
+                    {item.freeShip ? <Text style={styles.freeShip}>Free shipping</Text> : null}
+                  </Pressable>
+                ))}
+              </ScrollView>
+
+              <View style={[styles.sectionHead, { marginTop: 22 }]}>
+                <Text style={styles.sectionTitle}>More gifts</Text>
+              </View>
+
+              <View style={styles.moreGrid}>
+                {MORE_GIFTS.map((item) => (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => openProduct(item)}
+                    style={({ pressed }) => [styles.moreCard, pressed && styles.pressed]}
+                  >
+                    <View style={styles.imageWrap}>
+                      <ProductImage source={item.image} style={styles.moreImg} />
+                      <FavButton
+                        active={!!favorites[item.id]}
+                        onPress={() => toggleFavorite(item.id)}
+                      />
+                    </View>
+                    <Text style={styles.salePrice}>{item.price}</Text>
+                    <Text style={styles.saleTitle} numberOfLines={2}>
+                      {item.title}
+                    </Text>
+                    {item.freeShip ? <Text style={styles.freeShip}>Free shipping</Text> : null}
+                  </Pressable>
+                ))}
+              </View>
+
+              <View style={[styles.sectionHead, { marginTop: 22 }]}>
+                <Text style={styles.sectionTitle}>Recently viewed</Text>
+              </View>
+
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.cardsRow}
+              >
+                {RECENT.map((item) => (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => openProduct(item)}
+                    style={({ pressed }) => [
+                      styles.recentCard,
+                      { backgroundColor: item.tone },
+                      pressed && styles.pressed,
+                    ]}
+                  >
+                    <View style={styles.imageWrap}>
+                      <ProductImage source={item.image} style={styles.recentImg} />
+                      <FavButton
+                        active={!!favorites[item.id]}
+                        onPress={() => toggleFavorite(item.id)}
+                      />
+                    </View>
+                    <Text style={styles.recentTitle}>{item.title}</Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </ScrollView>
+          ) : tab === 'categories' ? (
+            <ScrollView
+              style={styles.scroll}
+              contentContainerStyle={styles.categoriesContent}
+              showsVerticalScrollIndicator={false}
+            >
+              <Pressable onPress={openSearch} style={styles.categorySearchBar}>
+                <Text style={styles.categorySearchText} numberOfLines={1}>
+                  {query.trim() || CATEGORY_SEARCH_PLACEHOLDER}
+                </Text>
+                <View style={styles.categorySearchIcon}>
+                  <SearchIcon />
+                </View>
+              </Pressable>
+
+              <View style={styles.categoryList}>
+                {CATEGORY_CARDS.map((item) => (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => {
+                      setCategory(item.title);
+                      switchTab('home');
+                    }}
+                    style={({ pressed }) => [styles.categoryHeroCard, pressed && styles.pressed]}
+                  >
+                    <LinearGradient
+                      colors={[...item.colors]}
+                      start={{ x: 0.5, y: 0 }}
+                      end={{ x: 0.5, y: 1 }}
+                      style={styles.categoryGradient}
+                    >
+                      <Text style={styles.categoryHeroTitle}>{item.title}</Text>
+                      <View style={styles.categoryHeroArt}>
+                        <CategoryIllustration id={item.id} size={168} />
+                      </View>
+                    </LinearGradient>
+                  </Pressable>
+                ))}
+              </View>
+            </ScrollView>
+          ) : (
+            <View style={styles.placeholderTab}>
+              <Text style={styles.placeholderTitle}>
+                {tab === 'favorites' ? 'Favorites' : 'Profile'}
+              </Text>
+              <Text style={styles.placeholderSub}>Coming next</Text>
+              {tab === 'profile' && onOpenProfile ? (
+                <Pressable onPress={onOpenProfile} style={styles.linkBtn}>
+                  <Text style={styles.linkText}>Account settings</Text>
+                </Pressable>
+              ) : null}
             </View>
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.cardsRow}
-          >
-            {FEATURED.map((item) => (
-              <Pressable
-                key={item.id}
-                onPress={() => openProduct(item)}
-                style={({ pressed }) => [styles.featuredCard, pressed && styles.pressed]}
-              >
-                <View style={styles.imageWrap}>
-                  <ProductImage source={item.image} style={styles.featuredImg} />
-                  <FavButton
-                    active={!!favorites[item.id]}
-                    onPress={() => toggleFavorite(item.id)}
-                  />
-                </View>
-                <View style={styles.featuredBadge}>
-                  <Text style={styles.featuredBadgeText}>Featured</Text>
-                </View>
-                <Text style={styles.salePrice}>{item.price}</Text>
-                <Text style={styles.saleTitle} numberOfLines={2}>
-                  {item.title}
-                </Text>
-                {item.freeShip ? <Text style={styles.freeShip}>Free shipping</Text> : null}
-              </Pressable>
-            ))}
-          </ScrollView>
-
-          <View style={styles.sectionHead}>
-            <Text style={styles.sectionTitle}>Hot sales</Text>
-            <View style={styles.dots}>
-              <View style={[styles.dot, styles.dotActive]} />
-              <View style={styles.dot} />
-              <View style={styles.dot} />
-            </View>
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.cardsRow}
-          >
-            {HOT_SALES.map((item) => (
-              <Pressable
-                key={item.id}
-                onPress={() => openProduct(item)}
-                style={({ pressed }) => [styles.saleCard, pressed && styles.pressed]}
-              >
-                <View style={styles.imageWrap}>
-                  <ProductImage source={item.image} />
-                  <FavButton
-                    active={!!favorites[item.id]}
-                    onPress={() => toggleFavorite(item.id)}
-                  />
-                </View>
-                <Text style={styles.salePrice}>{item.price}</Text>
-                <Text style={styles.saleTitle} numberOfLines={2}>
-                  {item.title}
-                </Text>
-                {item.freeShip ? <Text style={styles.freeShip}>Free shipping</Text> : null}
-              </Pressable>
-            ))}
-          </ScrollView>
-
-          <View style={[styles.sectionHead, { marginTop: 22 }]}>
-            <Text style={styles.sectionTitle}>More gifts</Text>
-          </View>
-
-          <View style={styles.moreGrid}>
-            {MORE_GIFTS.map((item) => (
-              <Pressable
-                key={item.id}
-                onPress={() => openProduct(item)}
-                style={({ pressed }) => [styles.moreCard, pressed && styles.pressed]}
-              >
-                <View style={styles.imageWrap}>
-                  <ProductImage source={item.image} style={styles.moreImg} />
-                  <FavButton
-                    active={!!favorites[item.id]}
-                    onPress={() => toggleFavorite(item.id)}
-                  />
-                </View>
-                <Text style={styles.salePrice}>{item.price}</Text>
-                <Text style={styles.saleTitle} numberOfLines={2}>
-                  {item.title}
-                </Text>
-                {item.freeShip ? <Text style={styles.freeShip}>Free shipping</Text> : null}
-              </Pressable>
-            ))}
-          </View>
-
-          <View style={[styles.sectionHead, { marginTop: 22 }]}>
-            <Text style={styles.sectionTitle}>Recently viewed</Text>
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.cardsRow}
-          >
-            {RECENT.map((item) => (
-              <Pressable
-                key={item.id}
-                onPress={() => openProduct(item)}
-                style={({ pressed }) => [
-                  styles.recentCard,
-                  { backgroundColor: item.tone },
-                  pressed && styles.pressed,
-                ]}
-              >
-                <View style={styles.imageWrap}>
-                  <ProductImage source={item.image} style={styles.recentImg} />
-                  <FavButton
-                    active={!!favorites[item.id]}
-                    onPress={() => toggleFavorite(item.id)}
-                  />
-                </View>
-                <Text style={styles.recentTitle}>{item.title}</Text>
-              </Pressable>
-            ))}
-          </ScrollView>
-        </ScrollView>
-      ) : tab === 'categories' ? (
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <Text style={styles.categoriesTitle}>Categories</Text>
-          <Text style={styles.categoriesSub}>Browse gifts by occasion and style</Text>
-          <View style={styles.categoryGrid}>
-            {CATEGORY_CARDS.map((item) => (
-              <Pressable
-                key={item.id}
-                onPress={() => {
-                  setCategory(item.title);
-                  setTab('home');
-                }}
-                style={({ pressed }) => [
-                  styles.categoryCard,
-                  { backgroundColor: item.tone },
-                  pressed && styles.pressed,
-                ]}
-              >
-                <Image source={item.image} style={styles.categoryImg} resizeMode="cover" />
-                <Text style={styles.categoryCardTitle}>{item.title}</Text>
-                <Text style={styles.categoryCardSub}>{item.subtitle}</Text>
-              </Pressable>
-            ))}
-          </View>
-        </ScrollView>
-      ) : (
-        <View style={styles.placeholderTab}>
-          <Text style={styles.placeholderTitle}>
-            {tab === 'favorites' ? 'Favorites' : 'Profile'}
-          </Text>
-          <Text style={styles.placeholderSub}>Coming next</Text>
-          {tab === 'profile' && onOpenProfile ? (
-            <Pressable onPress={onOpenProfile} style={styles.linkBtn}>
-              <Text style={styles.linkText}>Account settings</Text>
-            </Pressable>
-          ) : null}
-        </View>
-      )}
+          )}
+        </TransitionHost>
+      </View>
 
       <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, 10) }]}>
         {(
@@ -571,7 +691,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
           return (
             <Pressable
               key={item.key}
-              onPress={() => setTab(item.key)}
+              onPress={() => switchTab(item.key)}
               style={[styles.tabItem, active && styles.tabItemActive]}
               accessibilityRole="button"
               accessibilityState={{ selected: active }}
@@ -620,7 +740,9 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
               </Pressable>
             </View>
 
-            <Text style={styles.suggestHeading}>Suggestions</Text>
+            <Text style={styles.suggestHeading}>
+              {noSearchMatch ? 'No matches' : 'Suggestions'}
+            </Text>
             <ScrollView
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
@@ -636,8 +758,25 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                   <Text style={styles.suggestText}>{item}</Text>
                 </Pressable>
               ))}
-              {filteredSuggestions.length === 0 ? (
-                <Text style={styles.suggestEmpty}>No suggestions found</Text>
+              {noSearchMatch ? (
+                <View style={styles.requestPanel}>
+                  <Text style={styles.requestTitle}>Can’t find “{query.trim()}”?</Text>
+                  <Text style={styles.requestSub}>
+                    Request we add it to the app, or ask us to check if it’s available.
+                  </Text>
+                  <Pressable
+                    onPress={() => submitSearchRequest('add')}
+                    style={({ pressed }) => [styles.requestPrimaryBtn, pressed && styles.pressed]}
+                  >
+                    <Text style={styles.requestPrimaryText}>Request to add</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => submitSearchRequest('ask')}
+                    style={({ pressed }) => [styles.requestSecondaryBtn, pressed && styles.pressed]}
+                  >
+                    <Text style={styles.requestSecondaryText}>Ask if available</Text>
+                  </Pressable>
+                </View>
               ) : null}
             </ScrollView>
           </View>
@@ -653,6 +792,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   scroll: { flex: 1 },
+  tabContent: {
+    flex: 1,
+    overflow: 'hidden',
+  },
   scrollContent: {
     paddingHorizontal: 18,
     paddingBottom: 20,
@@ -708,14 +851,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: BLUE,
   },
+  topActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginLeft: 'auto',
+  },
   cartBtn: {
     width: 44,
     height: 44,
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 'auto',
     backgroundColor: FIELD,
+  },
+  bellBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: FIELD,
+  },
+  bellDot: {
+    position: 'absolute',
+    top: 10,
+    right: 11,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: BLUE,
   },
   cartBadge: {
     position: 'absolute',
@@ -734,46 +899,64 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: '#FFFFFF',
   },
-  categoriesTitle: {
-    fontFamily: fonts.bold,
-    fontSize: 28,
-    color: TEXT,
-    marginBottom: 4,
+  categoriesContent: {
+    paddingHorizontal: 18,
+    paddingBottom: 24,
   },
-  categoriesSub: {
-    fontFamily: fonts.regular,
-    fontSize: 14,
-    color: MUTED,
-    marginBottom: 18,
-  },
-  categoryGrid: {
+  categorySearchBar: {
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
+    alignItems: 'center',
+    paddingHorizontal: 18,
+    marginBottom: 18,
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 8px 24px rgba(20, 30, 60, 0.08)' } as object)
+      : {
+          shadowColor: '#14203C',
+          shadowOpacity: 0.1,
+          shadowRadius: 16,
+          shadowOffset: { width: 0, height: 6 },
+          elevation: 4,
+        }),
   },
-  categoryCard: {
-    width: '47.5%',
-    borderRadius: 18,
-    padding: 12,
+  categorySearchText: {
+    flex: 1,
+    fontFamily: fonts.regular,
+    fontSize: 15,
+    color: MUTED,
+  },
+  categorySearchIcon: {
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  categoryList: {
+    gap: 16,
+  },
+  categoryHeroCard: {
+    borderRadius: 28,
     overflow: 'hidden',
   },
-  categoryImg: {
-    width: '100%',
-    height: 96,
-    borderRadius: 14,
-    marginBottom: 10,
-    backgroundColor: '#FFFFFF',
+  categoryGradient: {
+    minHeight: 168,
+    paddingTop: 22,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  categoryCardTitle: {
-    fontFamily: fonts.semiBold,
-    fontSize: 16,
-    color: TEXT,
-    marginBottom: 2,
+  categoryHeroTitle: {
+    fontFamily: fonts.bold,
+    fontSize: 28,
+    color: '#1B1B2A',
+    textAlign: 'center',
   },
-  categoryCardSub: {
-    fontFamily: fonts.regular,
-    fontSize: 12,
-    color: MUTED,
+  categoryHeroArt: {
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginBottom: -4,
   },
   searchModal: {
     flex: 1,
@@ -829,6 +1012,51 @@ const styles = StyleSheet.create({
     color: MUTED,
     paddingVertical: 18,
     textAlign: 'center',
+  },
+  requestPanel: {
+    marginTop: 8,
+    paddingVertical: 8,
+    alignItems: 'stretch',
+  },
+  requestTitle: {
+    fontFamily: fonts.semiBold,
+    fontSize: 16,
+    color: TEXT,
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  requestSub: {
+    fontFamily: fonts.regular,
+    fontSize: 13,
+    color: MUTED,
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: 16,
+  },
+  requestPrimaryBtn: {
+    height: 46,
+    borderRadius: 14,
+    backgroundColor: BLUE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  requestPrimaryText: {
+    fontFamily: fonts.semiBold,
+    fontSize: 15,
+    color: '#FFFFFF',
+  },
+  requestSecondaryBtn: {
+    height: 46,
+    borderRadius: 14,
+    backgroundColor: BLUE_SOFT,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  requestSecondaryText: {
+    fontFamily: fonts.semiBold,
+    fontSize: 15,
+    color: BLUE,
   },
   banner: {
     borderRadius: 22,
