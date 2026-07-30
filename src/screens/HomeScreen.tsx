@@ -177,20 +177,48 @@ const TAB_ORDER: TabKey[] = ['home', 'categories', 'favorites', 'profile'];
 
 const ALL_PRODUCTS: Product[] = [...FEATURED, ...HOT_SALES, ...MORE_GIFTS, ...RECENT];
 
+function parsePriceAmount(price?: string): number | null {
+  if (!price) return null;
+  const n = Number(price.replace(/[^\d]/g, ''));
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+function formatInr(amount: number): string {
+  return `₹ ${amount.toLocaleString('en-IN')}`;
+}
+
 function toDetailProduct(product: Product): DetailProduct {
   const others = ALL_PRODUCTS.filter((p) => p.id !== product.id).slice(0, 2);
   const gallery = [product.image, ...others.map((p) => p.image)];
   while (gallery.length < 3) gallery.push(product.image);
+
+  const sale = parsePriceAmount(product.price);
+  const discountPool = [15, 20, 25, 30, 35, 40];
+  const discountPercent = discountPool[product.id.charCodeAt(product.id.length - 1) % discountPool.length];
+  const originalAmount = sale ? Math.round(sale / (1 - discountPercent / 100)) : null;
+  // Round original to nearest 50 for cleaner MRPs
+  const originalRounded =
+    originalAmount != null ? Math.ceil(originalAmount / 50) * 50 : null;
+
   return {
     id: product.id,
     title: product.title,
     price: product.price ?? '₹ —',
+    originalPrice: originalRounded != null ? formatInr(originalRounded) : undefined,
+    discountPercent: originalRounded != null ? discountPercent : undefined,
     image: product.image,
     freeShip: product.freeShip,
     rating: 4.8,
     reviews: 231,
     colors: ['#2B2B2B', '#E8DCC8', '#D0D4DA'],
     gallery,
+    description: `Make every occasion memorable with ${product.title}. Carefully selected for quality and presentation, it arrives gift-ready with premium finishing details. Designed to delight — whether you’re surprising someone special or treating yourself.`,
+    seller: {
+      name: 'Givit Official',
+      location: 'Mumbai, India',
+      rating: 4.9,
+      orders: '2.4k+',
+    },
   };
 }
 
@@ -304,6 +332,29 @@ function ProductImage({ source, style }: { source: ImageSourcePropType; style?: 
   return <Image source={source} style={[styles.productImg, style]} resizeMode="cover" />;
 }
 
+function CartMiniIcon({ color = '#FFFFFF' }: { color?: string }) {
+  return (
+    <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M4 6h2l1.2 9.2a2 2 0 0 0 2 1.8h7.4a2 2 0 0 0 2-1.6L20 8H7"
+        stroke={color}
+        strokeWidth={1.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path d="M10.5 12.5h5" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+      <Circle cx="10" cy="20" r="1.3" fill={color} />
+      <Circle cx="17" cy="20" r="1.3" fill={color} />
+    </Svg>
+  );
+}
+
+function stopCardNav(e: unknown) {
+  if (typeof (e as { stopPropagation?: () => void }).stopPropagation === 'function') {
+    (e as { stopPropagation: () => void }).stopPropagation();
+  }
+}
+
 function FavButton({
   active,
   onPress,
@@ -314,9 +365,7 @@ function FavButton({
   return (
     <Pressable
       onPress={(e) => {
-        if (typeof (e as { stopPropagation?: () => void }).stopPropagation === 'function') {
-          (e as { stopPropagation: () => void }).stopPropagation();
-        }
+        stopCardNav(e);
         onPress();
       }}
       hitSlop={8}
@@ -326,6 +375,42 @@ function FavButton({
     >
       <HeartIcon filled={active} color={BLUE} />
     </Pressable>
+  );
+}
+
+function PriceCartPill({
+  price,
+  compact,
+  onAdd,
+}: {
+  price: string;
+  compact?: boolean;
+  onAdd: () => void;
+}) {
+  return (
+    <View style={[styles.pricePill, compact && styles.pricePillCompact]}>
+      <View style={styles.pricePillInfo}>
+        <Text style={[styles.pricePillAmount, compact && styles.pricePillAmountCompact]} numberOfLines={1}>
+          {price}
+        </Text>
+        {!compact ? (
+          <Text style={styles.pricePillTax} numberOfLines={1} ellipsizeMode="tail">
+            Inclu. of all taxes
+          </Text>
+        ) : null}
+      </View>
+      <Pressable
+        onPress={(e) => {
+          stopCardNav(e);
+          onAdd();
+        }}
+        accessibilityRole="button"
+        accessibilityLabel="Add to cart"
+        style={({ pressed }) => [styles.pricePillCart, pressed && styles.pressed]}
+      >
+        <CartMiniIcon />
+      </Pressable>
+    </View>
   );
 }
 
@@ -363,9 +448,9 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
     setSelectedProduct(product);
   };
 
-  const addToCart = () => {
+  const addToCart = (title?: string) => {
     setCartCount((n) => n + 1);
-    Alert.alert('Added to cart', 'Item added to your cart.');
+    Alert.alert('Added to cart', title ? `${title} added to your cart.` : 'Item added to your cart.');
   };
 
   const buyNow = () => {
@@ -437,7 +522,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
         onBack={() => setSelectedProduct(null)}
         onToggleFavorite={() => toggleFavorite(selectedProduct.id)}
         onShare={() => Alert.alert('Share', 'Sharing coming soon.')}
-        onAddToCart={addToCart}
+        onAddToCart={() => addToCart(selectedProduct.title)}
         onBuyNow={buyNow}
       />
     );
@@ -557,10 +642,10 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                     <View style={styles.featuredBadge}>
                       <Text style={styles.featuredBadgeText}>Featured</Text>
                     </View>
-                    <Text style={styles.salePrice}>{item.price}</Text>
                     <Text style={styles.saleTitle} numberOfLines={2}>
                       {item.title}
                     </Text>
+                    <PriceCartPill price={item.price ?? '₹ —'} onAdd={() => addToCart(item.title)} />
                     {item.freeShip ? <Text style={styles.freeShip}>Free shipping</Text> : null}
                   </Pressable>
                 ))}
@@ -593,10 +678,14 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                         onPress={() => toggleFavorite(item.id)}
                       />
                     </View>
-                    <Text style={styles.salePrice}>{item.price}</Text>
                     <Text style={styles.saleTitle} numberOfLines={2}>
                       {item.title}
                     </Text>
+                    <PriceCartPill
+                      price={item.price ?? '₹ —'}
+                      compact
+                      onAdd={() => addToCart(item.title)}
+                    />
                     {item.freeShip ? <Text style={styles.freeShip}>Free shipping</Text> : null}
                   </Pressable>
                 ))}
@@ -620,10 +709,14 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                         onPress={() => toggleFavorite(item.id)}
                       />
                     </View>
-                    <Text style={styles.salePrice}>{item.price}</Text>
                     <Text style={styles.saleTitle} numberOfLines={2}>
                       {item.title}
                     </Text>
+                    <PriceCartPill
+                      price={item.price ?? '₹ —'}
+                      compact
+                      onAdd={() => addToCart(item.title)}
+                    />
                     {item.freeShip ? <Text style={styles.freeShip}>Free shipping</Text> : null}
                   </Pressable>
                 ))}
@@ -656,6 +749,13 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                       />
                     </View>
                     <Text style={styles.recentTitle}>{item.title}</Text>
+                    <PriceCartPill
+                      price={
+                        ALL_PRODUCTS.find((p) => p.title === item.title && p.price)?.price ?? '₹ —'
+                      }
+                      compact
+                      onAdd={() => addToCart(item.title)}
+                    />
                   </Pressable>
                 ))}
               </ScrollView>
@@ -1417,11 +1517,61 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: TEXT,
   },
+  pricePill: {
+    marginTop: 8,
+    marginBottom: 2,
+    minHeight: 40,
+    borderRadius: 12,
+    backgroundColor: FIELD,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: 12,
+    paddingRight: 4,
+    paddingVertical: 4,
+    gap: 6,
+  },
+  pricePillCompact: {
+    minHeight: 36,
+    paddingLeft: 10,
+    borderRadius: 10,
+  },
+  pricePillInfo: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minWidth: 0,
+  },
+  pricePillAmount: {
+    fontFamily: fonts.bold,
+    fontSize: 15,
+    color: TEXT,
+    flexShrink: 0,
+  },
+  pricePillAmountCompact: {
+    fontSize: 13,
+  },
+  pricePillTax: {
+    fontFamily: fonts.regular,
+    fontSize: 9,
+    lineHeight: 12,
+    color: MUTED,
+    flexShrink: 1,
+    minWidth: 0,
+  },
+  pricePillCart: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: BLUE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   saleTitle: {
     marginTop: 2,
-    fontFamily: fonts.regular,
+    fontFamily: fonts.medium,
     fontSize: 13,
-    color: MUTED,
+    color: TEXT,
   },
   freeShip: {
     marginTop: 6,
