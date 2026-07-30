@@ -40,6 +40,7 @@ const BLUE_SOFT = 'rgba(0, 76, 255, 0.10)';
 const TEXT = '#1A1A1A';
 const MUTED = '#8A8A96';
 const FIELD = '#F3F4F8';
+const DANGER = '#E11D48';
 const PINK_CARD = '#F8E8EE';
 const CREAM_CARD = '#F7F0E4';
 const useNative = Platform.OS !== 'web';
@@ -52,55 +53,87 @@ const CATEGORY_CARDS: {
   tagline: string;
   colors: readonly [string, string, string];
   glow: string;
+  ink: string;
+  muted: string;
+  ctaBg: string;
+  ctaText: string;
 }[] = [
   {
     id: 'tech',
     title: 'Tech',
     tagline: 'Smart gifts that impress',
-    colors: ['#F5F8FC', '#EEF3FA', '#FFFFFF'],
-    glow: 'rgba(0, 76, 255, 0.10)',
+    colors: ['#004CFF', '#004CFF', '#003BDB'],
+    glow: 'rgba(255,255,255,0.14)',
+    ink: '#FFFFFF',
+    muted: 'rgba(255,255,255,0.82)',
+    ctaBg: 'rgba(255,255,255,0.20)',
+    ctaText: '#FFFFFF',
   },
   {
     id: 'fashion',
     title: 'Fashion',
     tagline: 'Style they’ll love to wear',
-    colors: ['#F4F9F6', '#EAF4EF', '#FFFFFF'],
-    glow: 'rgba(45, 122, 90, 0.10)',
+    colors: ['#1F7A5A', '#1F7A5A', '#18674B'],
+    glow: 'rgba(255,255,255,0.12)',
+    ink: '#FFFFFF',
+    muted: 'rgba(255,255,255,0.82)',
+    ctaBg: 'rgba(255,255,255,0.20)',
+    ctaText: '#FFFFFF',
   },
   {
     id: 'flowers',
     title: 'Flowers',
     tagline: 'Blooms for every moment',
-    colors: ['#FAF5F7', '#F4EBEE', '#FFFFFF'],
-    glow: 'rgba(180, 100, 130, 0.10)',
+    colors: ['#C45B7A', '#C45B7A', '#B04E6C'],
+    glow: 'rgba(255,255,255,0.12)',
+    ink: '#FFFFFF',
+    muted: 'rgba(255,255,255,0.82)',
+    ctaBg: 'rgba(255,255,255,0.20)',
+    ctaText: '#FFFFFF',
   },
   {
     id: 'plants',
     title: 'Plants',
     tagline: 'Green gifts that grow',
-    colors: ['#F4F8F5', '#EAF2EC', '#FFFFFF'],
-    glow: 'rgba(70, 130, 90, 0.10)',
+    colors: ['#3D8B5F', '#3D8B5F', '#327550'],
+    glow: 'rgba(255,255,255,0.12)',
+    ink: '#FFFFFF',
+    muted: 'rgba(255,255,255,0.82)',
+    ctaBg: 'rgba(255,255,255,0.20)',
+    ctaText: '#FFFFFF',
   },
   {
     id: 'gourmet',
     title: 'Gourmet',
     tagline: 'Treats worth celebrating',
-    colors: ['#FAF7F3', '#F3ECE4', '#FFFFFF'],
-    glow: 'rgba(160, 110, 70, 0.10)',
+    colors: ['#C47A3A', '#C47A3A', '#A8662E'],
+    glow: 'rgba(255,255,255,0.12)',
+    ink: '#FFFFFF',
+    muted: 'rgba(255,255,255,0.82)',
+    ctaBg: 'rgba(255,255,255,0.20)',
+    ctaText: '#FFFFFF',
   },
   {
     id: 'kids',
     title: 'Kids',
     tagline: 'Playful joy for little ones',
-    colors: ['#F6F4FA', '#EEEAF5', '#FFFFFF'],
-    glow: 'rgba(110, 90, 180, 0.10)',
+    colors: ['#6B5BCC', '#6B5BCC', '#5A4BB8'],
+    glow: 'rgba(255,255,255,0.12)',
+    ink: '#FFFFFF',
+    muted: 'rgba(255,255,255,0.82)',
+    ctaBg: 'rgba(255,255,255,0.20)',
+    ctaText: '#FFFFFF',
   },
   {
     id: 'gifts',
     title: 'Gifts',
     tagline: 'Signature Givit picks',
-    colors: ['#F3F6FC', '#E8EEF8', '#FFFFFF'],
-    glow: 'rgba(0, 76, 255, 0.12)',
+    colors: ['#0B3DCF', '#0B3DCF', '#004CFF'],
+    glow: 'rgba(255,255,255,0.14)',
+    ink: '#FFFFFF',
+    muted: 'rgba(255,255,255,0.82)',
+    ctaBg: 'rgba(255,255,255,0.20)',
+    ctaText: '#FFFFFF',
   },
 ];
 
@@ -470,13 +503,145 @@ function BellIcon() {
   );
 }
 
-function ChevronRightIcon() {
+function ChevronRightIcon({ color = BLUE }: { color?: string }) {
   return (
     <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
-      <Path d="M9 6l6 6-6 6" stroke={BLUE} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
+      <Path d="M9 6l6 6-6 6" stroke={color} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   );
 }
+
+function ProfileMenuIcon({
+  name,
+  color = BLUE,
+}: {
+  name: 'orders' | 'address' | 'payment' | 'heart' | 'bell' | 'help' | 'info' | 'logout';
+  color?: string;
+}) {
+  if (name === 'orders') {
+    return (
+      <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+        <Path
+          d="M4 6h2l1.2 9.2a2 2 0 0 0 2 1.8h7.4a2 2 0 0 0 2-1.6L20 8H7"
+          stroke={color}
+          strokeWidth={1.8}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <Circle cx="10" cy="20" r="1.3" fill={color} />
+        <Circle cx="17" cy="20" r="1.3" fill={color} />
+      </Svg>
+    );
+  }
+  if (name === 'address') {
+    return (
+      <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+        <Path
+          d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z"
+          stroke={color}
+          strokeWidth={1.8}
+        />
+        <Circle cx="12" cy="10" r="2.4" stroke={color} strokeWidth={1.8} />
+      </Svg>
+    );
+  }
+  if (name === 'payment') {
+    return (
+      <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+        <Rect x="2.5" y="5" width="19" height="14" rx="2.5" stroke={color} strokeWidth={1.8} />
+        <Path d="M2.5 10h19" stroke={color} strokeWidth={1.8} />
+      </Svg>
+    );
+  }
+  if (name === 'heart') {
+    return (
+      <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+        <Path
+          d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8a3.8 3.8 0 0 1 7 2.8C19 15.6 12 20 12 20Z"
+          stroke={color}
+          strokeWidth={1.8}
+          strokeLinejoin="round"
+        />
+      </Svg>
+    );
+  }
+  if (name === 'bell') {
+    return (
+      <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+        <Path
+          d="M6 10a6 6 0 1 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 14 6 10Z"
+          stroke={color}
+          strokeWidth={1.8}
+          strokeLinejoin="round"
+        />
+        <Path d="M10 18.5a2 2 0 0 0 4 0" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+      </Svg>
+    );
+  }
+  if (name === 'help') {
+    return (
+      <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+        <Circle cx="12" cy="12" r="9" stroke={color} strokeWidth={1.8} />
+        <Path
+          d="M9.6 9.2a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2.8-1.2 1.8"
+          stroke={color}
+          strokeWidth={1.8}
+          strokeLinecap="round"
+        />
+        <Circle cx="12" cy="16.5" r="1" fill={color} />
+      </Svg>
+    );
+  }
+  if (name === 'info') {
+    return (
+      <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+        <Circle cx="12" cy="12" r="9" stroke={color} strokeWidth={1.8} />
+        <Path d="M12 11v5" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+        <Circle cx="12" cy="8" r="1" fill={color} />
+      </Svg>
+    );
+  }
+  return (
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3"
+        stroke={color}
+        strokeWidth={1.8}
+        strokeLinecap="round"
+      />
+      <Path d="M16 17l5-5-5-5" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+      <Path d="M21 12H9" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+const PROFILE_MENU: {
+  title: string;
+  items: { id: string; label: string; hint: string; icon: Parameters<typeof ProfileMenuIcon>[0]['name'] }[];
+}[] = [
+  {
+    title: 'Shopping',
+    items: [
+      { id: 'orders', label: 'My orders', hint: 'Track gifts & deliveries', icon: 'orders' },
+      { id: 'addresses', label: 'Saved addresses', hint: 'Home, office & more', icon: 'address' },
+      { id: 'payments', label: 'Payment methods', hint: 'Cards & UPI', icon: 'payment' },
+    ],
+  },
+  {
+    title: 'Preferences',
+    items: [
+      { id: 'favorites', label: 'Favorites', hint: 'Gifts you loved', icon: 'heart' },
+      { id: 'alerts', label: 'Notifications', hint: 'Offers & order updates', icon: 'bell' },
+    ],
+  },
+  {
+    title: 'Support',
+    items: [
+      { id: 'help', label: 'Help & support', hint: 'FAQs and chat', icon: 'help' },
+      { id: 'about', label: 'About Givit', hint: 'Version & brand story', icon: 'info' },
+    ],
+  },
+];
 
 function CategoryChipIcon({ name, active }: { name: string; active: boolean }) {
   const c = active ? BLUE : MUTED;
@@ -1467,7 +1632,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                 </Pressable>
 
                 <View style={styles.categoryList}>
-                  {CATEGORY_CARDS.map((item, index) => (
+                  {CATEGORY_CARDS.map((item) => (
                     <Pressable
                       key={item.id}
                       onPress={() => {
@@ -1490,11 +1655,17 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                       >
                         <View style={[styles.categoryGlow, { backgroundColor: item.glow }]} />
                         <View style={styles.categoryCopy}>
-                          <Text style={styles.categoryHeroTitle}>{item.title}</Text>
-                          <Text style={styles.categoryTagline}>{item.tagline}</Text>
-                          <View style={styles.categoryCta}>
-                            <Text style={styles.categoryCtaText}>Shop now</Text>
-                            <ChevronRightIcon />
+                          <Text style={[styles.categoryHeroTitle, { color: item.ink }]}>
+                            {item.title}
+                          </Text>
+                          <Text style={[styles.categoryTagline, { color: item.muted }]}>
+                            {item.tagline}
+                          </Text>
+                          <View style={[styles.categoryCta, { backgroundColor: item.ctaBg }]}>
+                            <Text style={[styles.categoryCtaText, { color: item.ctaText }]}>
+                              Shop now
+                            </Text>
+                            <ChevronRightIcon color={item.ctaText} />
                           </View>
                         </View>
                         <View style={styles.categoryHeroArt}>
@@ -1558,15 +1729,121 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
               </ScrollView>
             )
           ) : (
-            <View style={styles.placeholderTab}>
-              <Text style={styles.placeholderTitle}>Profile</Text>
-              <Text style={styles.placeholderSub}>Coming next</Text>
-              {onOpenProfile ? (
-                <Pressable onPress={onOpenProfile} style={styles.linkBtn}>
-                  <Text style={styles.linkText}>Account settings</Text>
+            <ScrollView
+              style={styles.scroll}
+              contentContainerStyle={styles.profileContent}
+              showsVerticalScrollIndicator={false}
+            >
+              <LinearGradient
+                colors={['#004CFF', '#2A6FDB', '#5B8CFF']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.profileHero}
+              >
+                <View style={styles.profileHeroTop}>
+                  <Text style={styles.profileHeroEyebrow}>Your account</Text>
+                  <Pressable
+                    onPress={() => Alert.alert('Edit profile', 'Profile editing coming soon.')}
+                    style={({ pressed }) => [styles.profileEditBtn, pressed && styles.pressed]}
+                  >
+                    <Text style={styles.profileEditText}>Edit</Text>
+                  </Pressable>
+                </View>
+                <View style={styles.profileIdentity}>
+                  <View style={styles.profileAvatar}>
+                    <Text style={styles.profileAvatarText}>AM</Text>
+                  </View>
+                  <View style={styles.profileIdentityCopy}>
+                    <View style={styles.profileNameRow}>
+                      <Text style={styles.profileName}>Alex Morgan</Text>
+                      <VerifiedIcon size={16} />
+                    </View>
+                    <Text style={styles.profileEmail}>alex.morgan@email.com</Text>
+                    <Text style={styles.profileMember}>Givit member · Mumbai</Text>
+                  </View>
+                </View>
+              </LinearGradient>
+
+              <View style={styles.profileQuickRow}>
+                <Pressable
+                  onPress={() => setCartOpen(true)}
+                  style={({ pressed }) => [styles.profileQuickBtn, pressed && styles.pressed]}
+                >
+                  <Text style={styles.profileQuickValue}>{cartCount}</Text>
+                  <Text style={styles.profileQuickLabel}>In cart</Text>
                 </Pressable>
-              ) : null}
-            </View>
+                <Pressable
+                  onPress={() =>
+                    Alert.alert(
+                      'Favorites',
+                      `${Object.values(favorites).filter(Boolean).length} saved gifts`,
+                    )
+                  }
+                  style={({ pressed }) => [styles.profileQuickBtn, pressed && styles.pressed]}
+                >
+                  <Text style={styles.profileQuickValue}>
+                    {Object.values(favorites).filter(Boolean).length}
+                  </Text>
+                  <Text style={styles.profileQuickLabel}>Saved</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => Alert.alert('Orders', 'Your order history will appear here.')}
+                  style={({ pressed }) => [styles.profileQuickBtn, pressed && styles.pressed]}
+                >
+                  <Text style={styles.profileQuickValue}>2</Text>
+                  <Text style={styles.profileQuickLabel}>Orders</Text>
+                </Pressable>
+              </View>
+
+              {PROFILE_MENU.map((section) => (
+                <View key={section.title} style={styles.profileSection}>
+                  <Text style={styles.profileSectionTitle}>{section.title}</Text>
+                  <View style={styles.profileMenuCard}>
+                    {section.items.map((item, index) => (
+                      <Pressable
+                        key={item.id}
+                        onPress={() => {
+                          if (item.id === 'favorites') {
+                            Alert.alert(
+                              'Favorites',
+                              `${Object.values(favorites).filter(Boolean).length} gifts saved.`,
+                            );
+                            return;
+                          }
+                          Alert.alert(item.label, `${item.hint} — coming soon.`);
+                        }}
+                        style={({ pressed }) => [
+                          styles.profileMenuRow,
+                          index < section.items.length - 1 && styles.profileMenuDivider,
+                          pressed && styles.pressed,
+                        ]}
+                      >
+                        <View style={styles.profileMenuIcon}>
+                          <ProfileMenuIcon name={item.icon} />
+                        </View>
+                        <View style={styles.profileMenuCopy}>
+                          <Text style={styles.profileMenuLabel}>{item.label}</Text>
+                          <Text style={styles.profileMenuHint}>{item.hint}</Text>
+                        </View>
+                        <ChevronRightIcon color={MUTED} />
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              ))}
+
+              <Pressable
+                onPress={() =>
+                  Alert.alert('Sign out', 'Sign out will be available with account auth.')
+                }
+                style={({ pressed }) => [styles.profileLogout, pressed && styles.pressed]}
+              >
+                <ProfileMenuIcon name="logout" color={DANGER} />
+                <Text style={styles.profileLogoutText}>Sign out</Text>
+              </Pressable>
+
+              <Text style={styles.profileVersion}>Givit · made for thoughtful gifting</Text>
+            </ScrollView>
           )}
         </TransitionHost>
       </View>
@@ -1906,14 +2183,12 @@ const styles = StyleSheet.create({
   categoryHeroTitle: {
     fontFamily: fonts.display,
     fontSize: 28,
-    color: TEXT,
     marginBottom: 4,
   },
   categoryTagline: {
     fontFamily: fonts.regular,
     fontSize: 13,
     lineHeight: 18,
-    color: MUTED,
     marginBottom: 14,
     maxWidth: 150,
   },
@@ -1922,7 +2197,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: 'rgba(0, 76, 255, 0.08)',
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 999,
@@ -1930,7 +2204,6 @@ const styles = StyleSheet.create({
   categoryCtaText: {
     fontFamily: fonts.semiBold,
     fontSize: 12,
-    color: BLUE,
   },
   categoryHeroArt: {
     width: 128,
@@ -2443,6 +2716,189 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
     fontSize: 14,
     color: MUTED,
+  },
+  profileContent: {
+    paddingHorizontal: 18,
+    paddingBottom: 36,
+    paddingTop: 4,
+  },
+  profileHero: {
+    borderRadius: 22,
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 18,
+    marginBottom: 14,
+    overflow: 'hidden',
+  },
+  profileHeroTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  profileHeroEyebrow: {
+    fontFamily: fonts.medium,
+    fontSize: 12,
+    letterSpacing: 0.6,
+    color: 'rgba(255,255,255,0.78)',
+    textTransform: 'uppercase',
+  },
+  profileEditBtn: {
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  profileEditText: {
+    fontFamily: fonts.semiBold,
+    fontSize: 12,
+    color: '#FFFFFF',
+  },
+  profileIdentity: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  profileAvatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'rgba(255,255,255,0.22)',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileAvatarText: {
+    fontFamily: fonts.bold,
+    fontSize: 22,
+    color: '#FFFFFF',
+  },
+  profileIdentityCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+  profileNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 2,
+  },
+  profileName: {
+    fontFamily: fonts.display,
+    fontSize: 24,
+    color: '#FFFFFF',
+  },
+  profileEmail: {
+    fontFamily: fonts.regular,
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.86)',
+    marginBottom: 2,
+  },
+  profileMember: {
+    fontFamily: fonts.medium,
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.72)',
+  },
+  profileQuickRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 18,
+  },
+  profileQuickBtn: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E8EAF2',
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  profileQuickValue: {
+    fontFamily: fonts.bold,
+    fontSize: 20,
+    color: BLUE,
+    marginBottom: 2,
+  },
+  profileQuickLabel: {
+    fontFamily: fonts.medium,
+    fontSize: 12,
+    color: MUTED,
+  },
+  profileSection: {
+    marginBottom: 16,
+  },
+  profileSectionTitle: {
+    fontFamily: fonts.semiBold,
+    fontSize: 13,
+    color: MUTED,
+    marginBottom: 8,
+    marginLeft: 4,
+    letterSpacing: 0.3,
+  },
+  profileMenuCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#E8EAF2',
+    overflow: 'hidden',
+  },
+  profileMenuRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  profileMenuDivider: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#ECECF2',
+  },
+  profileMenuIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: BLUE_SOFT,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileMenuCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+  profileMenuLabel: {
+    fontFamily: fonts.semiBold,
+    fontSize: 15,
+    color: TEXT,
+    marginBottom: 2,
+  },
+  profileMenuHint: {
+    fontFamily: fonts.regular,
+    fontSize: 12,
+    color: MUTED,
+  },
+  profileLogout: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 4,
+    marginBottom: 14,
+    paddingVertical: 14,
+    borderRadius: 16,
+    backgroundColor: 'rgba(225, 29, 72, 0.06)',
+  },
+  profileLogoutText: {
+    fontFamily: fonts.semiBold,
+    fontSize: 15,
+    color: DANGER,
+  },
+  profileVersion: {
+    fontFamily: fonts.regular,
+    fontSize: 12,
+    color: MUTED,
+    textAlign: 'center',
+    marginBottom: 8,
   },
   exclusivesContent: {
     paddingHorizontal: 18,
