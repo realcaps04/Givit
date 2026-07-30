@@ -1003,62 +1003,168 @@ export function CheckoutScreen({
 
         {items.length > 0 && step === 3 ? (
           <>
-            <Text style={styles.sectionLead}>Review everything before you pay</Text>
+            <LinearGradient
+              colors={['#004CFF', '#2A6FDB', '#5B8CFF']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.reviewHero}
+            >
+              <Text style={styles.reviewHeroEyebrow}>Ready to gift</Text>
+              <Text style={styles.reviewHeroTitle}>Review your order</Text>
+              <Text style={styles.reviewHeroSub}>
+                {itemCount} item{itemCount === 1 ? '' : 's'} · {formatInr(total)}
+              </Text>
+            </LinearGradient>
 
-            <View style={styles.reviewBlock}>
-              <Text style={styles.reviewBlockTitle}>Products</Text>
-              {items.map((item) => (
-                <View key={item.id} style={styles.reviewProduct}>
+            <View style={styles.reviewCard}>
+              <View style={styles.reviewCardHead}>
+                <View style={styles.reviewIconBubble}>
+                  <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+                    <Path
+                      d="M6 7h12l1 13H5L6 7Z"
+                      stroke={BLUE}
+                      strokeWidth={1.8}
+                      strokeLinejoin="round"
+                    />
+                    <Path
+                      d="M9 7V5a3 3 0 0 1 6 0v2"
+                      stroke={BLUE}
+                      strokeWidth={1.8}
+                      strokeLinecap="round"
+                    />
+                  </Svg>
+                </View>
+                <Text style={styles.reviewCardTitle}>Products</Text>
+                <Text style={styles.reviewCardCount}>{itemCount}</Text>
+              </View>
+              {items.map((item, index) => (
+                <View
+                  key={item.id}
+                  style={[
+                    styles.reviewProduct,
+                    index < items.length - 1 && styles.reviewProductDivider,
+                  ]}
+                >
                   <Image source={item.image} style={styles.reviewImg} />
                   <View style={styles.reviewProductInfo}>
-                    <Text style={styles.reviewProductTitle} numberOfLines={1}>
+                    <Text style={styles.reviewProductTitle} numberOfLines={2}>
                       {item.title}
                     </Text>
-                    <Text style={styles.reviewProductMeta}>
-                      Qty {item.qty} · {item.price}
-                    </Text>
+                    <View style={styles.reviewQtyPill}>
+                      <Text style={styles.reviewQtyText}>Qty {item.qty}</Text>
+                    </View>
                   </View>
+                  <Text style={styles.reviewProductPrice}>{item.price}</Text>
                 </View>
               ))}
             </View>
 
-            <View style={styles.reviewBlock}>
-              <Text style={styles.reviewBlockTitle}>Shipping</Text>
+            <View style={styles.reviewCard}>
+              <View style={styles.reviewCardHead}>
+                <View style={styles.reviewIconBubble}>
+                  <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+                    <Path
+                      d="M3 7h11v10H3V7Z"
+                      stroke={BLUE}
+                      strokeWidth={1.8}
+                      strokeLinejoin="round"
+                    />
+                    <Path
+                      d="M14 10h4l3 3v4h-7v-7Z"
+                      stroke={BLUE}
+                      strokeWidth={1.8}
+                      strokeLinejoin="round"
+                    />
+                    <Circle cx="7" cy="18.5" r="1.6" fill={BLUE} />
+                    <Circle cx="17.5" cy="18.5" r="1.6" fill={BLUE} />
+                  </Svg>
+                </View>
+                <Text style={styles.reviewCardTitle}>Shipping</Text>
+                <View style={styles.reviewTag}>
+                  <Text style={styles.reviewTagText}>
+                    {shipping === 'home' ? 'Delivery' : 'Pickup'}
+                  </Text>
+                </View>
+              </View>
               <Text style={styles.reviewLine}>
                 {shipping === 'home' ? 'Home delivery' : 'Pick up in store'}
               </Text>
               {shipping === 'home' && selectedAddress ? (
-                <>
-                  <Text style={styles.reviewMuted}>
-                    {selectedAddress.label} · {selectedAddress.name} · {selectedAddress.phone}
+                <View style={styles.reviewDetailBox}>
+                  <Text style={styles.reviewDetailStrong}>
+                    {selectedAddress.label} · {selectedAddress.name}
                   </Text>
+                  <Text style={styles.reviewMuted}>{selectedAddress.phone}</Text>
                   <Text style={styles.reviewMuted}>
                     {selectedAddress.line1}, {selectedAddress.line2}
                   </Text>
-                </>
+                </View>
               ) : (
-                <>
-                  <Text style={styles.reviewMuted}>
+                <View style={styles.reviewDetailBox}>
+                  <Text style={styles.reviewDetailStrong}>
                     {pickupName} · {pickupPhone}
                   </Text>
                   <Text style={styles.reviewMuted}>Givit Store · Bandra</Text>
-                </>
+                  <Text style={styles.reviewMuted}>Ready in 2–4 hours · Free pickup</Text>
+                </View>
               )}
             </View>
 
-            <View style={styles.reviewBlock}>
-              <Text style={styles.reviewBlockTitle}>Payment</Text>
-              <Text style={styles.reviewLine}>{payLabel}</Text>
-              {appliedVoucher ? (
-                <Text style={styles.reviewMuted}>
-                  Coupon · {appliedVoucher.title} (−{appliedVoucher.discountPercent}%)
-                </Text>
-              ) : (
-                <Text style={styles.reviewMuted}>No coupon applied</Text>
-              )}
+            <View style={styles.reviewCard}>
+              <View style={styles.reviewCardHead}>
+                <View style={styles.reviewIconBubble}>
+                  <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+                    <Rect
+                      x="2.5"
+                      y="5"
+                      width="19"
+                      height="14"
+                      rx="2.5"
+                      stroke={BLUE}
+                      strokeWidth={1.8}
+                    />
+                    <Path d="M2.5 10h19" stroke={BLUE} strokeWidth={1.8} />
+                  </Svg>
+                </View>
+                <Text style={styles.reviewCardTitle}>Payment</Text>
+              </View>
+              <View style={styles.reviewPayRow}>
+                <View style={styles.reviewPayMark}>
+                  {!payExtra && selectedCard?.brand === 'visa' ? (
+                    <Image
+                      source={VISA_MARK}
+                      style={{ width: 40, height: 14, tintColor: '#1A1F71' }}
+                      resizeMode="contain"
+                    />
+                  ) : !payExtra && selectedCard?.brand === 'mastercard' ? (
+                    <MastercardLogo />
+                  ) : payExtra === 'upi' ? (
+                    <UpiLogo />
+                  ) : payExtra === 'gpay' ? (
+                    <GooglePayLogo />
+                  ) : payExtra === 'apple' ? (
+                    <ApplePayLogo />
+                  ) : payExtra === 'paypal' ? (
+                    <PayPalLogo />
+                  ) : (
+                    <Text style={styles.reviewPayFallback}>COD</Text>
+                  )}
+                </View>
+                <View style={styles.reviewProductInfo}>
+                  <Text style={styles.reviewLineTight}>{payLabel}</Text>
+                  {appliedVoucher ? (
+                    <Text style={styles.reviewCouponOn}>
+                      {appliedVoucher.title} · −{appliedVoucher.discountPercent}%
+                    </Text>
+                  ) : (
+                    <Text style={styles.reviewMuted}>No coupon applied</Text>
+                  )}
+                </View>
+              </View>
             </View>
 
-            <View style={styles.summary}>
+            <View style={styles.reviewSummaryCard}>
+              <Text style={styles.reviewSummaryTitle}>Order summary</Text>
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>
                   Subtotal ({itemCount} item{itemCount === 1 ? '' : 's'})
@@ -1072,7 +1178,9 @@ export function CheckoutScreen({
               {discount > 0 ? (
                 <View style={styles.summaryRow}>
                   <Text style={styles.summaryLabel}>Discount</Text>
-                  <Text style={[styles.summaryValue, styles.discountValue]}>−{formatInr(discount)}</Text>
+                  <Text style={[styles.summaryValue, styles.discountValue]}>
+                    −{formatInr(discount)}
+                  </Text>
                 </View>
               ) : null}
               <View style={styles.summaryDivider} />
@@ -1894,28 +2002,106 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#FFFFFF',
   },
-  reviewBlock: {
-    marginBottom: 16,
-    paddingBottom: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E8E8EE',
+  reviewHero: {
+    borderRadius: 18,
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+    marginBottom: 14,
+    overflow: 'hidden',
   },
-  reviewBlockTitle: {
-    fontFamily: fonts.semiBold,
+  reviewHeroEyebrow: {
+    fontFamily: fonts.medium,
+    fontSize: 12,
+    letterSpacing: 0.8,
+    color: 'rgba(255,255,255,0.78)',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+  },
+  reviewHeroTitle: {
+    fontFamily: fonts.bold,
+    fontSize: 22,
+    color: '#FFFFFF',
+    marginBottom: 6,
+  },
+  reviewHeroSub: {
+    fontFamily: fonts.medium,
     fontSize: 14,
+    color: 'rgba(255,255,255,0.88)',
+  },
+  reviewCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E8EAF2',
+    paddingHorizontal: 14,
+    paddingTop: 14,
+    paddingBottom: 12,
+    marginBottom: 12,
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 8px 24px rgba(15, 23, 42, 0.05)' } as object)
+      : {
+          shadowColor: '#0F172A',
+          shadowOpacity: 0.05,
+          shadowRadius: 12,
+          shadowOffset: { width: 0, height: 4 },
+          elevation: 2,
+        }),
+  },
+  reviewCardHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 12,
+  },
+  reviewIconBubble: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: 'rgba(0, 76, 255, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reviewCardTitle: {
+    fontFamily: fonts.semiBold,
+    fontSize: 16,
+    color: TEXT,
+    flex: 1,
+  },
+  reviewCardCount: {
+    fontFamily: fonts.semiBold,
+    fontSize: 12,
+    color: BLUE,
+    backgroundColor: 'rgba(0, 76, 255, 0.08)',
+    overflow: 'hidden',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+  },
+  reviewTag: {
+    backgroundColor: FIELD,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+  },
+  reviewTagText: {
+    fontFamily: fonts.medium,
+    fontSize: 11,
     color: MUTED,
-    marginBottom: 10,
   },
   reviewProduct: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 8,
+    gap: 12,
+    paddingVertical: 10,
+  },
+  reviewProductDivider: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#ECECF2',
   },
   reviewImg: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
+    width: 56,
+    height: 56,
+    borderRadius: 12,
     backgroundColor: FIELD,
   },
   reviewProductInfo: {
@@ -1926,24 +2112,96 @@ const styles = StyleSheet.create({
     fontFamily: fonts.semiBold,
     fontSize: 14,
     color: TEXT,
+    lineHeight: 19,
   },
-  reviewProductMeta: {
-    fontFamily: fonts.regular,
-    fontSize: 12,
+  reviewQtyPill: {
+    alignSelf: 'flex-start',
+    marginTop: 6,
+    backgroundColor: FIELD,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  reviewQtyText: {
+    fontFamily: fonts.medium,
+    fontSize: 11,
     color: MUTED,
-    marginTop: 2,
+  },
+  reviewProductPrice: {
+    fontFamily: fonts.semiBold,
+    fontSize: 14,
+    color: TEXT,
   },
   reviewLine: {
     fontFamily: fonts.semiBold,
     fontSize: 15,
     color: TEXT,
-    marginBottom: 4,
+    marginBottom: 8,
+  },
+  reviewLineTight: {
+    fontFamily: fonts.semiBold,
+    fontSize: 15,
+    color: TEXT,
+    marginBottom: 2,
+  },
+  reviewDetailBox: {
+    backgroundColor: FIELD,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 2,
+  },
+  reviewDetailStrong: {
+    fontFamily: fonts.semiBold,
+    fontSize: 13,
+    color: TEXT,
+    marginBottom: 2,
   },
   reviewMuted: {
     fontFamily: fonts.regular,
     fontSize: 13,
     color: MUTED,
     lineHeight: 18,
+  },
+  reviewPayRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  reviewPayMark: {
+    minWidth: 64,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: FIELD,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+  },
+  reviewPayFallback: {
+    fontFamily: fonts.bold,
+    fontSize: 13,
+    color: TEXT,
+  },
+  reviewCouponOn: {
+    fontFamily: fonts.medium,
+    fontSize: 12,
+    color: '#0F9D58',
+    marginTop: 2,
+  },
+  reviewSummaryCard: {
+    backgroundColor: 'rgba(0, 76, 255, 0.05)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 76, 255, 0.12)',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginBottom: 8,
+  },
+  reviewSummaryTitle: {
+    fontFamily: fonts.semiBold,
+    fontSize: 14,
+    color: BLUE,
+    marginBottom: 12,
   },
   summary: {
     marginTop: 4,
@@ -1970,7 +2228,7 @@ const styles = StyleSheet.create({
   },
   summaryDivider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: '#E8E8EE',
+    backgroundColor: 'rgba(0, 76, 255, 0.18)',
     marginVertical: 6,
   },
   totalLabel: {
@@ -1981,7 +2239,7 @@ const styles = StyleSheet.create({
   totalValue: {
     fontFamily: fonts.bold,
     fontSize: 20,
-    color: TEXT,
+    color: BLUE,
   },
   footer: {
     paddingHorizontal: 18,
