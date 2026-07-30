@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Platform, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import {
@@ -19,6 +19,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { WelcomeScreen } from './src/screens/WelcomeScreen';
 import { CreateAccountScreen } from './src/screens/CreateAccountScreen';
+import { LoginScreen } from './src/screens/LoginScreen';
 import { UpdateAvailableModal } from './src/components/UpdateAvailableModal';
 import { HardRefreshButton } from './src/components/HardRefreshButton';
 import {
@@ -27,7 +28,6 @@ import {
 } from './src/components/ScreenTransition';
 import { useAppUpdate } from './src/hooks/useAppUpdate';
 import { loadRoute, saveRoute, type AppRoute } from './src/navigation/routePersistence';
-import { colors, fonts } from './src/theme';
 
 if (Platform.OS !== 'web') {
   SplashScreen.preventAutoHideAsync().catch(() => undefined);
@@ -97,6 +97,10 @@ export default function App() {
     );
   }
 
+  const googleSoon = () => {
+    Alert.alert('Google', 'Google sign-in will be available soon.');
+  };
+
   const screen =
     route === 'welcome' ? (
       <WelcomeScreen
@@ -108,15 +112,15 @@ export default function App() {
         onDone={() => goTo('welcome', 'back')}
         onCancel={() => goTo('welcome', 'back')}
         onSkip={() => goTo('welcome', 'back')}
-        onGoogle={() => {
-          Alert.alert('Google', 'Google sign-in will be available soon.');
-        }}
+        onGoogle={googleSoon}
       />
     ) : (
-      <PlaceholderScreen
-        title="Welcome back"
-        subtitle="Login screen coming next."
-        onBack={() => goTo('welcome', 'back')}
+      <LoginScreen
+        onLogin={() => goTo('welcome', 'back')}
+        onCancel={() => goTo('welcome', 'back')}
+        onSkip={() => goTo('welcome', 'back')}
+        onGoogle={googleSoon}
+        onCreateAccount={() => goTo('signup', 'forward')}
       />
     );
 
@@ -140,26 +144,6 @@ export default function App() {
 
 const BLUE = '#004CFF';
 
-function PlaceholderScreen({
-  title,
-  subtitle,
-  onBack,
-}: {
-  title: string;
-  subtitle: string;
-  onBack: () => void;
-}) {
-  return (
-    <View style={styles.placeholder}>
-      <Text style={styles.placeholderTitle}>{title}</Text>
-      <Text style={styles.placeholderSubtitle}>{subtitle}</Text>
-      <Text style={styles.backLink} onPress={onBack}>
-        ← Back to welcome
-      </Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   root: {
     flex: 1,
@@ -176,30 +160,5 @@ const styles = StyleSheet.create({
     ...(Platform.OS === 'web'
       ? ({ minHeight: '100vh', height: '100%' } as object)
       : null),
-  },
-  placeholder: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-    backgroundColor: '#FFFFFF',
-    gap: 10,
-  },
-  placeholderTitle: {
-    fontFamily: fonts.bold,
-    fontSize: 24,
-    color: colors.darker,
-  },
-  placeholderSubtitle: {
-    fontFamily: fonts.medium,
-    fontSize: 15,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  backLink: {
-    marginTop: 18,
-    fontFamily: fonts.semiBold,
-    fontSize: 14,
-    color: BLUE,
   },
 });

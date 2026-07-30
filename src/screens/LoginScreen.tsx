@@ -1,7 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import {
-  FlatList,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -12,7 +10,6 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path, Circle, Ellipse } from 'react-native-svg';
-import { CountryFlag } from '../components/CountryFlag';
 import { fonts } from '../theme';
 
 const BLUE = '#004CFF';
@@ -24,46 +21,17 @@ const SKIP = '#B0B0B8';
 const ERROR = '#E11D48';
 const BORDER_ERR = 'rgba(225, 29, 72, 0.45)';
 
-type Country = {
-  code: string;
-  name: string;
-  dial: string;
-  phoneLength: number;
-};
-
-const COUNTRIES: Country[] = [
-  { code: 'IN', name: 'India', dial: '+91', phoneLength: 10 },
-  { code: 'US', name: 'United States', dial: '+1', phoneLength: 10 },
-  { code: 'GB', name: 'United Kingdom', dial: '+44', phoneLength: 10 },
-  { code: 'AE', name: 'United Arab Emirates', dial: '+971', phoneLength: 9 },
-  { code: 'AU', name: 'Australia', dial: '+61', phoneLength: 9 },
-  { code: 'CA', name: 'Canada', dial: '+1', phoneLength: 10 },
-  { code: 'SG', name: 'Singapore', dial: '+65', phoneLength: 8 },
-  { code: 'DE', name: 'Germany', dial: '+49', phoneLength: 11 },
-  { code: 'FR', name: 'France', dial: '+33', phoneLength: 9 },
-  { code: 'JP', name: 'Japan', dial: '+81', phoneLength: 10 },
-  { code: 'KR', name: 'South Korea', dial: '+82', phoneLength: 10 },
-  { code: 'SA', name: 'Saudi Arabia', dial: '+966', phoneLength: 9 },
-  { code: 'PK', name: 'Pakistan', dial: '+92', phoneLength: 10 },
-  { code: 'BD', name: 'Bangladesh', dial: '+880', phoneLength: 10 },
-  { code: 'LK', name: 'Sri Lanka', dial: '+94', phoneLength: 9 },
-  { code: 'NP', name: 'Nepal', dial: '+977', phoneLength: 10 },
-  { code: 'MY', name: 'Malaysia', dial: '+60', phoneLength: 9 },
-  { code: 'NZ', name: 'New Zealand', dial: '+64', phoneLength: 9 },
-];
-
-type CreateAccountScreenProps = {
-  onDone: () => void;
+type LoginScreenProps = {
+  onLogin: () => void;
   onCancel: () => void;
   onSkip: () => void;
   onGoogle: () => void;
+  onCreateAccount: () => void;
 };
 
 type FieldErrors = {
   email?: string;
   password?: string;
-  confirmPassword?: string;
-  phone?: string;
 };
 
 function EyeIcon({ hidden }: { hidden: boolean }) {
@@ -140,7 +108,6 @@ function BackgroundBlobs() {
 function isValidEmail(value: string) {
   const v = value.trim();
   if (!v || v.length > 254) return false;
-  // Practical email pattern: local@domain.tld (no spaces)
   return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(
     v,
   );
@@ -157,84 +124,35 @@ function validateEmail(value: string) {
 
 function validatePassword(value: string) {
   if (!value) return 'Password is required';
-  if (value.length < 8) return 'Use at least 8 characters';
-  if (value.length > 64) return 'Password is too long';
-  if (!/[A-Za-z]/.test(value)) return 'Include at least one letter';
-  if (!/[0-9]/.test(value)) return 'Include at least one number';
-  if (/\s/.test(value)) return 'Password cannot contain spaces';
+  if (value.length < 8) return 'Password must be at least 8 characters';
   return undefined;
 }
 
-function validateConfirmPassword(password: string, confirm: string) {
-  if (!confirm) return 'Confirm your password';
-  if (confirm !== password) return 'Passwords do not match';
-  return undefined;
-}
-
-function validatePhone(digits: string, country: Country) {
-  if (!digits) return 'Phone number is required';
-  if (!/^\d+$/.test(digits)) return 'Phone number must be digits only';
-  if (digits.length !== country.phoneLength) {
-    return `Enter a ${country.phoneLength}-digit ${country.name} number`;
-  }
-  // India mobiles start with 6–9
-  if (country.code === 'IN' && !/^[6-9]/.test(digits)) {
-    return 'Enter a valid Indian mobile number';
-  }
-  return undefined;
-}
-
-export function CreateAccountScreen({
-  onDone,
+export function LoginScreen({
+  onLogin,
   onCancel,
   onSkip,
   onGoogle,
-}: CreateAccountScreenProps) {
+  onCreateAccount,
+}: LoginScreenProps) {
   const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [phone, setPhone] = useState('');
   const [hidden, setHidden] = useState(true);
-  const [confirmHidden, setConfirmHidden] = useState(true);
-  const [country, setCountry] = useState<Country>(COUNTRIES[0]);
-  const [pickerOpen, setPickerOpen] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [touched, setTouched] = useState<Record<keyof FieldErrors, boolean>>({
     email: false,
     password: false,
-    confirmPassword: false,
-    phone: false,
   });
 
-  const dialPrefix = useMemo(() => country.dial, [country]);
-
-  const runValidation = (next?: {
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-    phone?: string;
-    country?: Country;
-  }): FieldErrors => {
+  const runValidation = (next?: { email?: string; password?: string }): FieldErrors => {
     const e = next?.email ?? email;
     const p = next?.password ?? password;
-    const c = next?.confirmPassword ?? confirmPassword;
-    const ph = next?.phone ?? phone;
-    const ct = next?.country ?? country;
     const nextErrors: FieldErrors = {};
-
     const emailError = validateEmail(e);
     if (emailError) nextErrors.email = emailError;
-
     const passwordError = validatePassword(p);
     if (passwordError) nextErrors.password = passwordError;
-
-    const confirmError = validateConfirmPassword(p, c);
-    if (confirmError) nextErrors.confirmPassword = confirmError;
-
-    const phoneError = validatePhone(ph.replace(/\D/g, ''), ct);
-    if (phoneError) nextErrors.phone = phoneError;
-
     return nextErrors;
   };
 
@@ -247,7 +165,6 @@ export function CreateAccountScreen({
   };
 
   const onChangeEmail = (value: string) => {
-    // Keep email-only characters; strip spaces as user types
     const cleaned = value.replace(/\s/g, '');
     setEmail(cleaned);
     if (touched.email) setErrors(runValidation({ email: cleaned }));
@@ -255,42 +172,15 @@ export function CreateAccountScreen({
 
   const onChangePassword = (value: string) => {
     setPassword(value);
-    if (touched.password || touched.confirmPassword) {
-      setErrors(runValidation({ password: value }));
-    }
+    if (touched.password) setErrors(runValidation({ password: value }));
   };
 
-  const onChangeConfirm = (value: string) => {
-    setConfirmPassword(value);
-    if (touched.confirmPassword) setErrors(runValidation({ confirmPassword: value }));
-  };
-
-  const onChangePhone = (value: string) => {
-    const digits = value.replace(/\D/g, '').slice(0, country.phoneLength);
-    setPhone(digits);
-    if (touched.phone) setErrors(runValidation({ phone: digits }));
-  };
-
-  const selectCountry = (item: Country) => {
-    setCountry(item);
-    setPickerOpen(false);
-    setPhone((prev) => prev.replace(/\D/g, '').slice(0, item.phoneLength));
-    if (touched.phone) {
-      setErrors(runValidation({ country: item }));
-    }
-  };
-
-  const handleDone = () => {
+  const handleLogin = () => {
     const nextErrors = runValidation();
-    setTouched({
-      email: true,
-      password: true,
-      confirmPassword: true,
-      phone: true,
-    });
+    setTouched({ email: true, password: true });
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
-    onDone();
+    onLogin();
   };
 
   return (
@@ -311,7 +201,7 @@ export function CreateAccountScreen({
           onPress={onSkip}
           hitSlop={12}
           accessibilityRole="button"
-          accessibilityLabel="Skip account creation"
+          accessibilityLabel="Skip login"
           style={({ pressed }) => [styles.skipBtn, pressed && styles.pressed]}
         >
           <Text style={styles.skipLabel}>Skip</Text>
@@ -325,7 +215,7 @@ export function CreateAccountScreen({
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.title}>
-          Create{'\n'}Account
+          Welcome{'\n'}Back
         </Text>
 
         <View style={styles.form}>
@@ -345,11 +235,7 @@ export function CreateAccountScreen({
               importantForAutofill="yes"
               underlineColorAndroid="transparent"
               {...(Platform.OS === 'web'
-                ? ({
-                    // Force native <input type="email"> on web
-                    type: 'email',
-                    enterKeyHint: 'next',
-                  } as object)
+                ? ({ type: 'email', enterKeyHint: 'next' } as object)
                 : null)}
               style={[styles.field, showError('email') ? styles.fieldError : null]}
             />
@@ -365,7 +251,8 @@ export function CreateAccountScreen({
                 placeholder="Password"
                 placeholderTextColor={PLACEHOLDER}
                 secureTextEntry={hidden}
-                autoComplete="password-new"
+                autoComplete="password"
+                textContentType="password"
                 underlineColorAndroid="transparent"
                 style={[
                   styles.field,
@@ -388,78 +275,24 @@ export function CreateAccountScreen({
             ) : null}
           </View>
 
-          <View>
-            <View style={styles.passwordWrap}>
-              <TextInput
-                value={confirmPassword}
-                onChangeText={onChangeConfirm}
-                onBlur={() => markTouched('confirmPassword')}
-                placeholder="Confirm password"
-                placeholderTextColor={PLACEHOLDER}
-                secureTextEntry={confirmHidden}
-                autoComplete="password-new"
-                underlineColorAndroid="transparent"
-                style={[
-                  styles.field,
-                  styles.passwordField,
-                  showError('confirmPassword') ? styles.fieldError : null,
-                ]}
-              />
-              <Pressable
-                onPress={() => setConfirmHidden((v) => !v)}
-                hitSlop={10}
-                style={styles.eyeBtn}
-                accessibilityRole="button"
-                accessibilityLabel={confirmHidden ? 'Show confirm password' : 'Hide confirm password'}
-              >
-                <EyeIcon hidden={confirmHidden} />
-              </Pressable>
-            </View>
-            {showError('confirmPassword') ? (
-              <Text style={styles.errorText}>{showError('confirmPassword')}</Text>
-            ) : null}
-          </View>
-
-          <View>
-            <View
-              style={[
-                styles.phoneRow,
-                showError('phone') ? styles.fieldError : null,
-              ]}
-            >
-              <Pressable
-                style={styles.country}
-                accessibilityRole="button"
-                accessibilityLabel={`Country code ${country.name}`}
-                onPress={() => setPickerOpen(true)}
-              >
-                <CountryFlag code={country.code} width={24} height={16} />
-                <Text style={styles.dial}>{dialPrefix}</Text>
-                <Text style={styles.chevron}>▾</Text>
-              </Pressable>
-              <View style={styles.phoneDivider} />
-              <TextInput
-                value={phone}
-                onChangeText={onChangePhone}
-                onBlur={() => markTouched('phone')}
-                placeholder="Phone number"
-                placeholderTextColor={PLACEHOLDER}
-                keyboardType="phone-pad"
-                underlineColorAndroid="transparent"
-                style={styles.phoneInput}
-              />
-            </View>
-            {showError('phone') ? <Text style={styles.errorText}>{showError('phone')}</Text> : null}
-          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Forgot password"
+            style={({ pressed }) => [styles.forgotWrap, pressed && styles.pressed]}
+            onPress={() => undefined}
+          >
+            <Text style={styles.forgotLabel}>Forgot password?</Text>
+          </Pressable>
         </View>
 
         <View style={styles.actions}>
           <Pressable
-            onPress={handleDone}
+            onPress={handleLogin}
             accessibilityRole="button"
-            style={({ pressed }) => [styles.doneBtn, pressed && styles.pressed]}
+            accessibilityLabel="Log in"
+            style={({ pressed }) => [styles.primaryBtn, pressed && styles.pressed]}
           >
-            <Text style={styles.doneLabel}>Sign up</Text>
+            <Text style={styles.primaryLabel}>Log in</Text>
           </Pressable>
 
           <View style={styles.dividerRow}>
@@ -471,11 +304,21 @@ export function CreateAccountScreen({
           <Pressable
             onPress={onGoogle}
             accessibilityRole="button"
-            accessibilityLabel="Create account with Google"
+            accessibilityLabel="Continue with Google"
             style={({ pressed }) => [styles.googleBtn, pressed && styles.pressed]}
           >
             <GoogleMark />
             <Text style={styles.googleLabel}>Continue with Google</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={onCreateAccount}
+            accessibilityRole="button"
+            style={({ pressed }) => [styles.switchWrap, pressed && styles.pressed]}
+          >
+            <Text style={styles.switchText}>
+              Don’t have an account? <Text style={styles.switchLink}>Sign up</Text>
+            </Text>
           </Pressable>
 
           <Pressable
@@ -487,41 +330,6 @@ export function CreateAccountScreen({
           </Pressable>
         </View>
       </ScrollView>
-
-      <Modal visible={pickerOpen} animationType="slide" transparent onRequestClose={() => setPickerOpen(false)}>
-        <Pressable style={styles.modalBackdrop} onPress={() => setPickerOpen(false)}>
-          <Pressable style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]} onPress={() => undefined}>
-            <View style={styles.sheetHandle} />
-            <Text style={styles.sheetTitle}>Select country</Text>
-            <FlatList
-              data={COUNTRIES}
-              keyExtractor={(item) => item.code}
-              keyboardShouldPersistTaps="handled"
-              style={styles.countryList}
-              renderItem={({ item }) => {
-                const selected = item.code === country.code;
-                return (
-                  <Pressable
-                    onPress={() => selectCountry(item)}
-                    style={({ pressed }) => [
-                      styles.countryRow,
-                      selected && styles.countryRowSelected,
-                      pressed && styles.pressed,
-                    ]}
-                  >
-                    <CountryFlag code={item.code} width={28} height={18} />
-                    <View style={styles.countryMeta}>
-                      <Text style={styles.countryName}>{item.name}</Text>
-                      <Text style={styles.countryDial}>{item.dial}</Text>
-                    </View>
-                    {selected ? <Text style={styles.check}>✓</Text> : null}
-                  </Pressable>
-                );
-              }}
-            />
-          </Pressable>
-        </Pressable>
-      </Modal>
     </View>
   );
 }
@@ -614,67 +422,29 @@ const styles = StyleSheet.create({
     height: 56,
     justifyContent: 'center',
   },
-  phoneRow: {
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: FIELD_BG,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
+  forgotWrap: {
+    alignSelf: 'flex-end',
+    paddingVertical: 2,
+    paddingHorizontal: 4,
   },
-  country: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingRight: 8,
-    paddingVertical: 8,
-  },
-  dial: {
+  forgotLabel: {
     fontFamily: fonts.medium,
-    fontSize: 14,
-    color: TITLE,
-  },
-  chevron: {
-    fontSize: 12,
+    fontSize: 13,
     color: MUTED,
-    marginTop: -2,
-  },
-  phoneDivider: {
-    width: 1,
-    height: 22,
-    backgroundColor: '#D8D8DE',
-    marginRight: 12,
-  },
-  phoneInput: {
-    flex: 1,
-    fontFamily: fonts.regular,
-    fontSize: 16,
-    color: TITLE,
-    padding: 0,
-    ...(Platform.OS === 'web'
-      ? ({
-          outlineStyle: 'none',
-          outlineWidth: 0,
-          outlineColor: 'transparent',
-          boxShadow: 'none',
-        } as object)
-      : null),
   },
   actions: {
     marginTop: 28,
     paddingBottom: 8,
     gap: 14,
   },
-  doneBtn: {
+  primaryBtn: {
     height: 56,
     borderRadius: 16,
     backgroundColor: BLUE,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  doneLabel: {
+  primaryLabel: {
     fontFamily: fonts.semiBold,
     fontSize: 16,
     color: '#FFFFFF',
@@ -711,6 +481,19 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: TITLE,
   },
+  switchWrap: {
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  switchText: {
+    fontFamily: fonts.regular,
+    fontSize: 14,
+    color: MUTED,
+  },
+  switchLink: {
+    fontFamily: fonts.semiBold,
+    color: BLUE,
+  },
   cancelWrap: {
     alignItems: 'center',
     paddingVertical: 6,
@@ -722,66 +505,5 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.85,
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.35)',
-    justifyContent: 'flex-end',
-  },
-  sheet: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
-    maxHeight: '70%',
-    paddingTop: 10,
-    paddingHorizontal: 16,
-  },
-  sheetHandle: {
-    alignSelf: 'center',
-    width: 42,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#D8D8DE',
-    marginBottom: 12,
-  },
-  sheetTitle: {
-    fontFamily: fonts.semiBold,
-    fontSize: 17,
-    color: TITLE,
-    marginBottom: 10,
-    paddingHorizontal: 6,
-  },
-  countryList: {
-    marginBottom: 8,
-  },
-  countryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-  },
-  countryRowSelected: {
-    backgroundColor: 'rgba(0,76,255,0.08)',
-  },
-  countryMeta: {
-    flex: 1,
-  },
-  countryName: {
-    fontFamily: fonts.medium,
-    fontSize: 15,
-    color: TITLE,
-  },
-  countryDial: {
-    fontFamily: fonts.regular,
-    fontSize: 13,
-    color: MUTED,
-    marginTop: 2,
-  },
-  check: {
-    fontFamily: fonts.semiBold,
-    fontSize: 16,
-    color: BLUE,
   },
 });
