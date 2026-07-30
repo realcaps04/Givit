@@ -1,5 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Animated,
+  Easing,
+  FlatList,
+  LayoutChangeEvent,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -10,6 +15,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path, Circle, Ellipse } from 'react-native-svg';
+import { CountryFlag } from '../components/CountryFlag';
+import { OtpDotsInput } from '../components/OtpDotsInput';
 import { fonts } from '../theme';
 
 const BLUE = '#004CFF';
@@ -20,6 +27,38 @@ const MUTED = '#8A8A8A';
 const SKIP = '#B0B0B8';
 const ERROR = '#E11D48';
 const BORDER_ERR = 'rgba(225, 29, 72, 0.45)';
+const PINK = '#FF6B9A';
+const useNative = Platform.OS !== 'web';
+
+type LoginMethod = 'email' | 'phone';
+
+type Country = {
+  code: string;
+  name: string;
+  dial: string;
+  phoneLength: number;
+};
+
+const COUNTRIES: Country[] = [
+  { code: 'IN', name: 'India', dial: '+91', phoneLength: 10 },
+  { code: 'US', name: 'United States', dial: '+1', phoneLength: 10 },
+  { code: 'GB', name: 'United Kingdom', dial: '+44', phoneLength: 10 },
+  { code: 'AE', name: 'United Arab Emirates', dial: '+971', phoneLength: 9 },
+  { code: 'AU', name: 'Australia', dial: '+61', phoneLength: 9 },
+  { code: 'CA', name: 'Canada', dial: '+1', phoneLength: 10 },
+  { code: 'SG', name: 'Singapore', dial: '+65', phoneLength: 8 },
+  { code: 'DE', name: 'Germany', dial: '+49', phoneLength: 11 },
+  { code: 'FR', name: 'France', dial: '+33', phoneLength: 9 },
+  { code: 'JP', name: 'Japan', dial: '+81', phoneLength: 10 },
+  { code: 'KR', name: 'South Korea', dial: '+82', phoneLength: 10 },
+  { code: 'SA', name: 'Saudi Arabia', dial: '+966', phoneLength: 9 },
+  { code: 'PK', name: 'Pakistan', dial: '+92', phoneLength: 10 },
+  { code: 'BD', name: 'Bangladesh', dial: '+880', phoneLength: 10 },
+  { code: 'LK', name: 'Sri Lanka', dial: '+94', phoneLength: 9 },
+  { code: 'NP', name: 'Nepal', dial: '+977', phoneLength: 10 },
+  { code: 'MY', name: 'Malaysia', dial: '+60', phoneLength: 9 },
+  { code: 'NZ', name: 'New Zealand', dial: '+64', phoneLength: 9 },
+];
 
 type LoginScreenProps = {
   onLogin: () => void;
@@ -27,11 +66,14 @@ type LoginScreenProps = {
   onSkip: () => void;
   onGoogle: () => void;
   onCreateAccount: () => void;
+  onForgotPassword: () => void;
 };
 
 type FieldErrors = {
   email?: string;
+  phone?: string;
   password?: string;
+  otp?: string;
 };
 
 function EyeIcon({ hidden }: { hidden: boolean }) {
@@ -39,12 +81,7 @@ function EyeIcon({ hidden }: { hidden: boolean }) {
     <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
       {hidden ? (
         <>
-          <Path
-            d="M3 3l18 18"
-            stroke={PLACEHOLDER}
-            strokeWidth={1.8}
-            strokeLinecap="round"
-          />
+          <Path d="M3 3l18 18" stroke={PLACEHOLDER} strokeWidth={1.8} strokeLinecap="round" />
           <Path
             d="M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.1A10.4 10.4 0 0 1 12 5c5 0 9.3 3.1 11 7.5a11.7 11.7 0 0 1-1.7 2.9M6.1 6.1A11.8 11.8 0 0 0 1 12.5C2.7 16.9 7 20 12 20c1.6 0 3.1-.3 4.5-.9"
             stroke={PLACEHOLDER}
@@ -122,10 +159,33 @@ function validateEmail(value: string) {
   return undefined;
 }
 
+function validatePhone(digits: string, country: Country) {
+  if (!digits) return 'Phone number is required';
+  if (!/^\d+$/.test(digits)) return 'Phone number must be digits only';
+  if (digits.length !== country.phoneLength) {
+    return `Enter a ${country.phoneLength}-digit ${country.name} number`;
+  }
+  if (country.code === 'IN' && !/^[6-9]/.test(digits)) {
+    return 'Enter a valid Indian mobile number';
+  }
+  return undefined;
+}
+
 function validatePassword(value: string) {
   if (!value) return 'Password is required';
   if (value.length < 8) return 'Password must be at least 8 characters';
   return undefined;
+}
+
+function validateOtp(value: string) {
+  if (!value) return 'Enter the 4-digit code';
+  if (value.length !== 4) return 'Enter the full 4-digit code';
+  return undefined;
+}
+
+function maskPhone(dial: string, digits: string) {
+  if (digits.length < 4) return `${dial}*******`;
+  return `${dial}${digits.slice(0, 2)}*****${digits.slice(-2)}`;
 }
 
 export function LoginScreen({
@@ -134,25 +194,75 @@ export function LoginScreen({
   onSkip,
   onGoogle,
   onCreateAccount,
+  onForgotPassword,
 }: LoginScreenProps) {
   const insets = useSafeAreaInsets();
+  const [method, setMethod] = useState<LoginMethod>('email');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
   const [hidden, setHidden] = useState(true);
+  const [country, setCountry] = useState<Country>(COUNTRIES[0]);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [touched, setTouched] = useState<Record<keyof FieldErrors, boolean>>({
     email: false,
+    phone: false,
     password: false,
+    otp: false,
   });
+  const [switchWidth, setSwitchWidth] = useState(0);
+  const pill = useRef(new Animated.Value(0)).current;
+  const panel = useRef(new Animated.Value(0)).current;
 
-  const runValidation = (next?: { email?: string; password?: string }): FieldErrors => {
+  const dialPrefix = useMemo(() => country.dial, [country]);
+
+  useEffect(() => {
+    Animated.spring(pill, {
+      toValue: method === 'email' ? 0 : 1,
+      useNativeDriver: false,
+      friction: 8,
+      tension: 120,
+    }).start();
+
+    panel.setValue(0);
+    Animated.timing(panel, {
+      toValue: 1,
+      duration: 260,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: useNative,
+    }).start();
+  }, [method, pill, panel]);
+
+  const runValidation = (next?: {
+    email?: string;
+    phone?: string;
+    password?: string;
+    otp?: string;
+    country?: Country;
+    method?: LoginMethod;
+  }): FieldErrors => {
+    const mode = next?.method ?? method;
     const e = next?.email ?? email;
+    const ph = next?.phone ?? phone;
     const p = next?.password ?? password;
+    const o = next?.otp ?? otp;
+    const ct = next?.country ?? country;
     const nextErrors: FieldErrors = {};
-    const emailError = validateEmail(e);
-    if (emailError) nextErrors.email = emailError;
-    const passwordError = validatePassword(p);
-    if (passwordError) nextErrors.password = passwordError;
+
+    if (mode === 'email') {
+      const emailError = validateEmail(e);
+      if (emailError) nextErrors.email = emailError;
+      const passwordError = validatePassword(p);
+      if (passwordError) nextErrors.password = passwordError;
+    } else {
+      const phoneError = validatePhone(ph.replace(/\D/g, ''), ct);
+      if (phoneError) nextErrors.phone = phoneError;
+      const otpError = validateOtp(o);
+      if (otpError) nextErrors.otp = otpError;
+    }
     return nextErrors;
   };
 
@@ -164,10 +274,27 @@ export function LoginScreen({
     setErrors(runValidation());
   };
 
+  const switchMethod = (next: LoginMethod) => {
+    if (next === method) return;
+    setMethod(next);
+    setOtp('');
+    setOtpSent(false);
+    setErrors({});
+    setTouched({ email: false, phone: false, password: false, otp: false });
+  };
+
   const onChangeEmail = (value: string) => {
     const cleaned = value.replace(/\s/g, '');
     setEmail(cleaned);
     if (touched.email) setErrors(runValidation({ email: cleaned }));
+  };
+
+  const onChangePhone = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, country.phoneLength);
+    setPhone(digits);
+    setOtpSent(false);
+    setOtp('');
+    if (touched.phone) setErrors(runValidation({ phone: digits }));
   };
 
   const onChangePassword = (value: string) => {
@@ -175,12 +302,71 @@ export function LoginScreen({
     if (touched.password) setErrors(runValidation({ password: value }));
   };
 
+  const onChangeOtp = (value: string) => {
+    setOtp(value);
+    if (touched.otp) setErrors(runValidation({ otp: value }));
+    if (value.length === 4) {
+      const phoneError = validatePhone(phone.replace(/\D/g, ''), country);
+      if (!phoneError) {
+        setTouched((t) => ({ ...t, phone: true, otp: true }));
+        setErrors({});
+        onLogin();
+      }
+    }
+  };
+
+  const selectCountry = (item: Country) => {
+    setCountry(item);
+    setPickerOpen(false);
+    setPhone((prev) => prev.replace(/\D/g, '').slice(0, item.phoneLength));
+    if (touched.phone) setErrors(runValidation({ country: item }));
+  };
+
+  const handleSendOtp = () => {
+    const phoneError = validatePhone(phone.replace(/\D/g, ''), country);
+    setTouched((t) => ({ ...t, phone: true }));
+    if (phoneError) {
+      setErrors({ phone: phoneError });
+      return;
+    }
+    setErrors({});
+    setOtp('');
+    setOtpSent(true);
+  };
+
   const handleLogin = () => {
     const nextErrors = runValidation();
-    setTouched({ email: true, password: true });
+    setTouched({
+      email: method === 'email',
+      phone: method === 'phone',
+      password: method === 'email',
+      otp: method === 'phone',
+    });
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
     onLogin();
+  };
+
+  const onSwitchLayout = (e: LayoutChangeEvent) => {
+    setSwitchWidth(e.nativeEvent.layout.width);
+  };
+
+  const pillWidth = Math.max((switchWidth - 8) / 2, 0);
+  const pillX = pill.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, pillWidth],
+  });
+
+  const panelStyle = {
+    opacity: panel,
+    transform: [
+      {
+        translateX: panel.interpolate({
+          inputRange: [0, 1],
+          outputRange: method === 'email' ? [-18, 0] : [18, 0],
+        }),
+      },
+    ],
   };
 
   return (
@@ -218,82 +404,189 @@ export function LoginScreen({
           Welcome{'\n'}Back
         </Text>
 
-        <View style={styles.form}>
-          <View>
-            <TextInput
-              value={email}
-              onChangeText={onChangeEmail}
-              onBlur={() => markTouched('email')}
-              placeholder="Email"
-              placeholderTextColor={PLACEHOLDER}
-              keyboardType="email-address"
-              inputMode="email"
-              textContentType="emailAddress"
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete="email"
-              importantForAutofill="yes"
-              underlineColorAndroid="transparent"
-              {...(Platform.OS === 'web'
-                ? ({ type: 'email', enterKeyHint: 'next' } as object)
-                : null)}
-              style={[styles.field, showError('email') ? styles.fieldError : null]}
+        <View style={styles.methodSwitch} onLayout={onSwitchLayout}>
+          {switchWidth > 0 ? (
+            <Animated.View
+              style={[
+                styles.methodPill,
+                {
+                  width: pillWidth,
+                  transform: [{ translateX: pillX }],
+                },
+              ]}
             />
-            {showError('email') ? <Text style={styles.errorText}>{showError('email')}</Text> : null}
-          </View>
-
-          <View>
-            <View style={styles.passwordWrap}>
-              <TextInput
-                value={password}
-                onChangeText={onChangePassword}
-                onBlur={() => markTouched('password')}
-                placeholder="Password"
-                placeholderTextColor={PLACEHOLDER}
-                secureTextEntry={hidden}
-                autoComplete="password"
-                textContentType="password"
-                underlineColorAndroid="transparent"
-                style={[
-                  styles.field,
-                  styles.passwordField,
-                  showError('password') ? styles.fieldError : null,
-                ]}
-              />
-              <Pressable
-                onPress={() => setHidden((v) => !v)}
-                hitSlop={10}
-                style={styles.eyeBtn}
-                accessibilityRole="button"
-                accessibilityLabel={hidden ? 'Show password' : 'Hide password'}
-              >
-                <EyeIcon hidden={hidden} />
-              </Pressable>
-            </View>
-            {showError('password') ? (
-              <Text style={styles.errorText}>{showError('password')}</Text>
-            ) : null}
-          </View>
-
+          ) : null}
           <Pressable
+            onPress={() => switchMethod('email')}
             accessibilityRole="button"
-            accessibilityLabel="Forgot password"
-            style={({ pressed }) => [styles.forgotWrap, pressed && styles.pressed]}
-            onPress={() => undefined}
+            accessibilityState={{ selected: method === 'email' }}
+            style={({ pressed }) => [styles.methodBtn, pressed && styles.pressed]}
           >
-            <Text style={styles.forgotLabel}>Forgot password?</Text>
+            <Text style={[styles.methodLabel, method === 'email' && styles.methodLabelActive]}>
+              Email
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => switchMethod('phone')}
+            accessibilityRole="button"
+            accessibilityState={{ selected: method === 'phone' }}
+            style={({ pressed }) => [styles.methodBtn, pressed && styles.pressed]}
+          >
+            <Text style={[styles.methodLabel, method === 'phone' && styles.methodLabelActive]}>
+              Phone
+            </Text>
           </Pressable>
         </View>
 
+        <Animated.View style={[styles.form, panelStyle]}>
+          {method === 'email' ? (
+            <>
+              <View>
+                <TextInput
+                  value={email}
+                  onChangeText={onChangeEmail}
+                  onBlur={() => markTouched('email')}
+                  placeholder="Email"
+                  placeholderTextColor={PLACEHOLDER}
+                  keyboardType="email-address"
+                  inputMode="email"
+                  textContentType="emailAddress"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  autoComplete="email"
+                  importantForAutofill="yes"
+                  underlineColorAndroid="transparent"
+                  {...(Platform.OS === 'web'
+                    ? ({ type: 'email', enterKeyHint: 'next' } as object)
+                    : null)}
+                  style={[styles.field, showError('email') ? styles.fieldError : null]}
+                />
+                {showError('email') ? (
+                  <Text style={styles.errorText}>{showError('email')}</Text>
+                ) : null}
+              </View>
+
+              <View>
+                <View style={styles.passwordWrap}>
+                  <TextInput
+                    value={password}
+                    onChangeText={onChangePassword}
+                    onBlur={() => markTouched('password')}
+                    placeholder="Password"
+                    placeholderTextColor={PLACEHOLDER}
+                    secureTextEntry={hidden}
+                    autoComplete="password"
+                    textContentType="password"
+                    underlineColorAndroid="transparent"
+                    style={[
+                      styles.field,
+                      styles.passwordField,
+                      showError('password') ? styles.fieldError : null,
+                    ]}
+                  />
+                  <Pressable
+                    onPress={() => setHidden((v) => !v)}
+                    hitSlop={10}
+                    style={styles.eyeBtn}
+                    accessibilityRole="button"
+                    accessibilityLabel={hidden ? 'Show password' : 'Hide password'}
+                  >
+                    <EyeIcon hidden={hidden} />
+                  </Pressable>
+                </View>
+                {showError('password') ? (
+                  <Text style={styles.errorText}>{showError('password')}</Text>
+                ) : null}
+              </View>
+
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Forgot password"
+                style={({ pressed }) => [styles.forgotWrap, pressed && styles.pressed]}
+                onPress={onForgotPassword}
+              >
+                <Text style={styles.forgotLabel}>Forgot password?</Text>
+              </Pressable>
+            </>
+          ) : (
+            <>
+              <View>
+                <View style={[styles.phoneRow, showError('phone') ? styles.fieldError : null]}>
+                  <Pressable
+                    style={styles.country}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Country code ${country.name}`}
+                    onPress={() => setPickerOpen(true)}
+                  >
+                    <CountryFlag code={country.code} width={24} height={16} />
+                    <Text style={styles.dial}>{dialPrefix}</Text>
+                    <Text style={styles.chevron}>▾</Text>
+                  </Pressable>
+                  <View style={styles.phoneDivider} />
+                  <TextInput
+                    value={phone}
+                    onChangeText={onChangePhone}
+                    onBlur={() => markTouched('phone')}
+                    placeholder="Phone number"
+                    placeholderTextColor={PLACEHOLDER}
+                    keyboardType="phone-pad"
+                    underlineColorAndroid="transparent"
+                    style={styles.phoneInput}
+                  />
+                </View>
+                {showError('phone') ? (
+                  <Text style={styles.errorText}>{showError('phone')}</Text>
+                ) : null}
+              </View>
+
+              <View style={styles.otpSection}>
+                <Text style={styles.otpHint}>
+                  {otpSent
+                    ? `Enter 4-digits code we sent you on ${maskPhone(dialPrefix, phone)}`
+                    : 'We’ll send a 4-digit OTP to verify your number'}
+                </Text>
+                {otpSent ? (
+                  <OtpDotsInput
+                    value={otp}
+                    onChange={onChangeOtp}
+                    error={showError('otp')}
+                    autoFocus
+                  />
+                ) : null}
+                <Pressable
+                  onPress={handleSendOtp}
+                  accessibilityRole="button"
+                  style={({ pressed }) => [styles.sendOtpBtn, pressed && styles.pressed]}
+                >
+                  <Text style={styles.sendOtpLabel}>
+                    {otpSent ? 'Send Again' : 'Send OTP'}
+                  </Text>
+                </Pressable>
+              </View>
+            </>
+          )}
+        </Animated.View>
+
         <View style={styles.actions}>
-          <Pressable
-            onPress={handleLogin}
-            accessibilityRole="button"
-            accessibilityLabel="Log in"
-            style={({ pressed }) => [styles.primaryBtn, pressed && styles.pressed]}
-          >
-            <Text style={styles.primaryLabel}>Log in</Text>
-          </Pressable>
+          {method === 'email' ? (
+            <Pressable
+              onPress={handleLogin}
+              accessibilityRole="button"
+              accessibilityLabel="Log in"
+              style={({ pressed }) => [styles.primaryBtn, pressed && styles.pressed]}
+            >
+              <Text style={styles.primaryLabel}>Log in</Text>
+            </Pressable>
+          ) : (
+            <Pressable
+              onPress={handleLogin}
+              accessibilityRole="button"
+              accessibilityLabel="Verify and log in"
+              style={({ pressed }) => [styles.primaryBtn, pressed && styles.pressed]}
+            >
+              <Text style={styles.primaryLabel}>Verify & Log in</Text>
+            </Pressable>
+          )}
 
           <View style={styles.dividerRow}>
             <View style={styles.dividerLine} />
@@ -330,6 +623,44 @@ export function LoginScreen({
           </Pressable>
         </View>
       </ScrollView>
+
+      <Modal visible={pickerOpen} animationType="slide" transparent onRequestClose={() => setPickerOpen(false)}>
+        <Pressable style={styles.modalBackdrop} onPress={() => setPickerOpen(false)}>
+          <Pressable
+            style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}
+            onPress={() => undefined}
+          >
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetTitle}>Select country</Text>
+            <FlatList
+              data={COUNTRIES}
+              keyExtractor={(item) => item.code}
+              keyboardShouldPersistTaps="handled"
+              style={styles.countryList}
+              renderItem={({ item }) => {
+                const selected = item.code === country.code;
+                return (
+                  <Pressable
+                    onPress={() => selectCountry(item)}
+                    style={({ pressed }) => [
+                      styles.countryRow,
+                      selected && styles.countryRowSelected,
+                      pressed && styles.pressed,
+                    ]}
+                  >
+                    <CountryFlag code={item.code} width={28} height={18} />
+                    <View style={styles.countryMeta}>
+                      <Text style={styles.countryName}>{item.name}</Text>
+                      <Text style={styles.countryDial}>{item.dial}</Text>
+                    </View>
+                    {selected ? <Text style={styles.check}>✓</Text> : null}
+                  </Pressable>
+                );
+              }}
+            />
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -348,38 +679,55 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     minHeight: 36,
   },
-  topBarSpacer: {
-    flex: 1,
-  },
-  skipBtn: {
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-  },
-  skipLabel: {
-    fontFamily: fonts.medium,
-    fontSize: 15,
-    color: SKIP,
-  },
-  scroll: {
-    flex: 1,
-    zIndex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 28,
-    paddingBottom: 20,
-    flexGrow: 1,
-  },
+  topBarSpacer: { flex: 1 },
+  skipBtn: { paddingHorizontal: 8, paddingVertical: 6 },
+  skipLabel: { fontFamily: fonts.medium, fontSize: 15, color: SKIP },
+  scroll: { flex: 1, zIndex: 1 },
+  scrollContent: { paddingHorizontal: 28, paddingBottom: 20, flexGrow: 1 },
   title: {
     fontFamily: fonts.bold,
     fontSize: 40,
     lineHeight: 46,
     color: TITLE,
     marginTop: 8,
-    marginBottom: 52,
+    marginBottom: 28,
   },
-  form: {
-    gap: 14,
+  methodSwitch: {
+    flexDirection: 'row',
+    backgroundColor: FIELD_BG,
+    borderRadius: 28,
+    padding: 4,
+    marginBottom: 20,
+    position: 'relative',
   },
+  methodPill: {
+    position: 'absolute',
+    top: 4,
+    left: 4,
+    bottom: 4,
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 2px 8px rgba(0,0,0,0.06)' } as object)
+      : {
+          shadowColor: '#000',
+          shadowOpacity: 0.06,
+          shadowRadius: 6,
+          shadowOffset: { width: 0, height: 2 },
+          elevation: 2,
+        }),
+  },
+  methodBtn: {
+    flex: 1,
+    height: 40,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+  methodLabel: { fontFamily: fonts.medium, fontSize: 14, color: MUTED },
+  methodLabelActive: { fontFamily: fonts.semiBold, color: TITLE },
+  form: { gap: 14 },
   field: {
     height: 56,
     borderRadius: 28,
@@ -391,17 +739,10 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'transparent',
     ...(Platform.OS === 'web'
-      ? ({
-          outlineStyle: 'none',
-          outlineWidth: 0,
-          outlineColor: 'transparent',
-          boxShadow: 'none',
-        } as object)
+      ? ({ outlineStyle: 'none', outlineWidth: 0, boxShadow: 'none' } as object)
       : null),
   },
-  fieldError: {
-    borderColor: BORDER_ERR,
-  },
+  fieldError: { borderColor: BORDER_ERR },
   errorText: {
     marginTop: 6,
     marginLeft: 18,
@@ -409,34 +750,58 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: ERROR,
   },
-  passwordWrap: {
-    position: 'relative',
-    justifyContent: 'center',
-  },
-  passwordField: {
-    paddingRight: 52,
-  },
-  eyeBtn: {
-    position: 'absolute',
-    right: 18,
+  passwordWrap: { position: 'relative', justifyContent: 'center' },
+  passwordField: { paddingRight: 52 },
+  eyeBtn: { position: 'absolute', right: 18, height: 56, justifyContent: 'center' },
+  phoneRow: {
     height: 56,
+    borderRadius: 28,
+    backgroundColor: FIELD_BG,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+  },
+  country: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingRight: 8,
+    paddingVertical: 8,
+  },
+  dial: { fontFamily: fonts.medium, fontSize: 14, color: TITLE },
+  chevron: { fontSize: 12, color: MUTED, marginTop: -2 },
+  phoneDivider: { width: 1, height: 22, backgroundColor: '#D8D8DE', marginRight: 12 },
+  phoneInput: {
+    flex: 1,
+    fontFamily: fonts.regular,
+    fontSize: 16,
+    color: TITLE,
+    padding: 0,
+    ...(Platform.OS === 'web'
+      ? ({ outlineStyle: 'none', outlineWidth: 0, boxShadow: 'none' } as object)
+      : null),
+  },
+  otpSection: { gap: 14, alignItems: 'stretch', paddingTop: 4 },
+  otpHint: {
+    fontFamily: fonts.regular,
+    fontSize: 14,
+    lineHeight: 20,
+    color: MUTED,
+    textAlign: 'center',
+  },
+  sendOtpBtn: {
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: PINK,
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  forgotWrap: {
-    alignSelf: 'flex-end',
-    paddingVertical: 2,
-    paddingHorizontal: 4,
-  },
-  forgotLabel: {
-    fontFamily: fonts.medium,
-    fontSize: 13,
-    color: MUTED,
-  },
-  actions: {
-    marginTop: 28,
-    paddingBottom: 8,
-    gap: 14,
-  },
+  sendOtpLabel: { fontFamily: fonts.semiBold, fontSize: 15, color: '#FFFFFF' },
+  forgotWrap: { alignSelf: 'flex-end', paddingVertical: 2, paddingHorizontal: 4 },
+  forgotLabel: { fontFamily: fonts.medium, fontSize: 13, color: MUTED },
+  actions: { marginTop: 28, paddingBottom: 8, gap: 14 },
   primaryBtn: {
     height: 56,
     borderRadius: 16,
@@ -444,27 +809,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  primaryLabel: {
-    fontFamily: fonts.semiBold,
-    fontSize: 16,
-    color: '#FFFFFF',
-  },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginVertical: 2,
-  },
-  dividerLine: {
-    flex: 1,
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: '#D8D8DE',
-  },
-  dividerText: {
-    fontFamily: fonts.medium,
-    fontSize: 13,
-    color: MUTED,
-  },
+  primaryLabel: { fontFamily: fonts.semiBold, fontSize: 16, color: '#FFFFFF' },
+  dividerRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginVertical: 2 },
+  dividerLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: '#D8D8DE' },
+  dividerText: { fontFamily: fonts.medium, fontSize: 13, color: MUTED },
   googleBtn: {
     height: 56,
     borderRadius: 16,
@@ -476,34 +824,49 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
   },
-  googleLabel: {
+  googleLabel: { fontFamily: fonts.semiBold, fontSize: 15, color: TITLE },
+  switchWrap: { alignItems: 'center', paddingVertical: 4 },
+  switchText: { fontFamily: fonts.regular, fontSize: 14, color: MUTED },
+  switchLink: { fontFamily: fonts.semiBold, color: BLUE },
+  cancelWrap: { alignItems: 'center', paddingVertical: 6 },
+  cancelLabel: { fontFamily: fonts.medium, fontSize: 15, color: MUTED },
+  pressed: { opacity: 0.85 },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-end' },
+  sheet: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+    maxHeight: '70%',
+    paddingTop: 10,
+    paddingHorizontal: 16,
+  },
+  sheetHandle: {
+    alignSelf: 'center',
+    width: 42,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#D8D8DE',
+    marginBottom: 12,
+  },
+  sheetTitle: {
     fontFamily: fonts.semiBold,
-    fontSize: 15,
+    fontSize: 17,
     color: TITLE,
+    marginBottom: 10,
+    paddingHorizontal: 6,
   },
-  switchWrap: {
+  countryList: { marginBottom: 8 },
+  countryRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 4,
+    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderRadius: 12,
   },
-  switchText: {
-    fontFamily: fonts.regular,
-    fontSize: 14,
-    color: MUTED,
-  },
-  switchLink: {
-    fontFamily: fonts.semiBold,
-    color: BLUE,
-  },
-  cancelWrap: {
-    alignItems: 'center',
-    paddingVertical: 6,
-  },
-  cancelLabel: {
-    fontFamily: fonts.medium,
-    fontSize: 15,
-    color: MUTED,
-  },
-  pressed: {
-    opacity: 0.85,
-  },
+  countryRowSelected: { backgroundColor: 'rgba(0,76,255,0.08)' },
+  countryMeta: { flex: 1 },
+  countryName: { fontFamily: fonts.medium, fontSize: 15, color: TITLE },
+  countryDial: { fontFamily: fonts.regular, fontSize: 13, color: MUTED, marginTop: 2 },
+  check: { fontFamily: fonts.semiBold, fontSize: 16, color: BLUE },
 });

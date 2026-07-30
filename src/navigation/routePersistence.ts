@@ -3,9 +3,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const KEY = 'givit:lastRoute';
 
-export type AppRoute = 'welcome' | 'login' | 'signup';
+export type AppRoute = 'welcome' | 'login' | 'signup' | 'forgot' | 'forgot-otp' | 'home';
 
-const VALID: AppRoute[] = ['welcome', 'login', 'signup'];
+const VALID: AppRoute[] = ['welcome', 'login', 'signup', 'forgot', 'forgot-otp', 'home'];
 
 function isAppRoute(value: string | null | undefined): value is AppRoute {
   return !!value && (VALID as string[]).includes(value);

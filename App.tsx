@@ -20,6 +20,12 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { WelcomeScreen } from './src/screens/WelcomeScreen';
 import { CreateAccountScreen } from './src/screens/CreateAccountScreen';
 import { LoginScreen } from './src/screens/LoginScreen';
+import { ForgotPasswordScreen } from './src/screens/ForgotPasswordScreen';
+import {
+  PasswordRecoveryOtpScreen,
+  type RecoveryChannel,
+} from './src/screens/PasswordRecoveryOtpScreen';
+import { HomeScreen } from './src/screens/HomeScreen';
 import { UpdateAvailableModal } from './src/components/UpdateAvailableModal';
 import { HardRefreshButton } from './src/components/HardRefreshButton';
 import {
@@ -34,6 +40,11 @@ if (Platform.OS !== 'web') {
 }
 
 type Route = 'boot' | AppRoute;
+
+type RecoveryContext = {
+  channel: RecoveryChannel;
+  destination: string;
+};
 
 export default function App() {
   const [fontsLoaded, fontError] = useFonts({
@@ -50,6 +61,10 @@ export default function App() {
   const [timedOut, setTimedOut] = useState(false);
   const [route, setRoute] = useState<Route>('boot');
   const [navDirection, setNavDirection] = useState<TransitionDirection>('none');
+  const [recovery, setRecovery] = useState<RecoveryContext>({
+    channel: 'sms',
+    destination: '+91*******00',
+  });
   const update = useAppUpdate();
 
   useEffect(() => {
@@ -109,18 +124,43 @@ export default function App() {
       />
     ) : route === 'signup' ? (
       <CreateAccountScreen
-        onDone={() => goTo('welcome', 'back')}
+        onDone={() => goTo('home', 'forward')}
         onCancel={() => goTo('welcome', 'back')}
-        onSkip={() => goTo('welcome', 'back')}
+        onSkip={() => goTo('home', 'forward')}
         onGoogle={googleSoon}
       />
+    ) : route === 'forgot' ? (
+      <ForgotPasswordScreen
+        onNext={(method) => {
+          setRecovery({
+            channel: method,
+            destination: method === 'sms' ? '+91*******00' : 'y***@email.com',
+          });
+          goTo('forgot-otp', 'forward');
+        }}
+        onCancel={() => goTo('login', 'back')}
+      />
+    ) : route === 'forgot-otp' ? (
+      <PasswordRecoveryOtpScreen
+        channel={recovery.channel}
+        destination={recovery.destination}
+        onVerified={() => {
+          Alert.alert('Verified', 'OTP accepted. Password reset will continue next.');
+          goTo('login', 'back');
+        }}
+        onSendAgain={() => undefined}
+        onCancel={() => goTo('forgot', 'back')}
+      />
+    ) : route === 'home' ? (
+      <HomeScreen />
     ) : (
       <LoginScreen
-        onLogin={() => goTo('welcome', 'back')}
+        onLogin={() => goTo('home', 'forward')}
         onCancel={() => goTo('welcome', 'back')}
-        onSkip={() => goTo('welcome', 'back')}
+        onSkip={() => goTo('home', 'forward')}
         onGoogle={googleSoon}
         onCreateAccount={() => goTo('signup', 'forward')}
+        onForgotPassword={() => goTo('forgot', 'forward')}
       />
     );
 
