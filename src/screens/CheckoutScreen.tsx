@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { fonts } from '../theme';
+import { PaymentBrandIcon, type PaymentBrandId } from '../components/PaymentBrandIcons';
 
 const BLUE = '#004CFF';
 const TEXT = '#1A1A1A';
@@ -23,28 +24,17 @@ const DANGER = '#E11D48';
 
 const VISA_MARK = require('../../assets/brands/visa.png');
 
-const UPI_APP_ICONS = {
-  phonepe: require('../../assets/brands/upi/phonepe.png'),
-  gpay: require('../../assets/brands/upi/gpay.png'),
-  paytm: require('../../assets/brands/upi/paytm.png'),
-  amazonpay: require('../../assets/brands/upi/amazonpay.png'),
-  whatsapp: require('../../assets/brands/upi/whatsapp.png'),
-  jiopay: require('../../assets/brands/upi/jiopay.png'),
-  mobikwik: require('../../assets/brands/upi/mobikwik.png'),
-  cred: require('../../assets/brands/upi/cred.png'),
-} as const;
-
-type UpiAppId = keyof typeof UPI_APP_ICONS | 'upi';
+type UpiAppId = PaymentBrandId;
 type PayExtra = UpiAppId | 'cod';
 
-const UPI_APPS: { id: UpiAppId; label: string; icon?: ImageSourcePropType }[] = [
-  { id: 'phonepe', label: 'PhonePe', icon: UPI_APP_ICONS.phonepe },
-  { id: 'gpay', label: 'GPay', icon: UPI_APP_ICONS.gpay },
-  { id: 'paytm', label: 'Paytm', icon: UPI_APP_ICONS.paytm },
-  { id: 'amazonpay', label: 'Amazon Pay', icon: UPI_APP_ICONS.amazonpay },
-  { id: 'whatsapp', label: 'WhatsApp', icon: UPI_APP_ICONS.whatsapp },
-  { id: 'jiopay', label: 'JioPay', icon: UPI_APP_ICONS.jiopay },
-  { id: 'mobikwik', label: 'MobiKwik', icon: UPI_APP_ICONS.mobikwik },
+const UPI_APPS: { id: UpiAppId; label: string }[] = [
+  { id: 'phonepe', label: 'PhonePe' },
+  { id: 'gpay', label: 'GPay' },
+  { id: 'paytm', label: 'Paytm' },
+  { id: 'amazonpay', label: 'Amazon Pay' },
+  { id: 'whatsapp', label: 'WhatsApp' },
+  { id: 'jiopay', label: 'JioPay' },
+  { id: 'mobikwik', label: 'MobiKwik' },
   { id: 'upi', label: 'UPI ID' },
 ];
 
@@ -265,21 +255,6 @@ function MastercardLogo() {
   );
 }
 
-function UpiMark({ size = 22 }: { size?: number }) {
-  return (
-    <Svg width={size} height={Math.round(size * 0.58)} viewBox="0 0 48 28" fill="none">
-      <Path d="M0.8 1.2 14.2 14 0.8 26.8 5.6 26.8 19 14 5.6 1.2Z" fill="#FF671F" />
-      <Path
-        d="M13.2 1.2 26.6 14 13.2 26.8 18 26.8 31.4 14 18 1.2Z"
-        fill="#FFFFFF"
-        stroke="#C9CCD4"
-        strokeWidth={0.9}
-      />
-      <Path d="M25.6 1.2 39 14 25.6 26.8 30.4 26.8 43.8 14 30.4 1.2Z" fill="#097A4B" />
-    </Svg>
-  );
-}
-
 function PayAppIcon({
   id,
   size = 28,
@@ -288,17 +263,7 @@ function PayAppIcon({
   size?: number;
 }) {
   if (!id || id === 'cod') return null;
-  if (id === 'upi') return <UpiMark size={size} />;
-  const src = UPI_APP_ICONS[id as keyof typeof UPI_APP_ICONS];
-  if (!src) return <UpiMark size={size} />;
-  return (
-    <Image
-      source={src}
-      style={{ width: size, height: size }}
-      resizeMode="contain"
-      accessibilityIgnoresInvertColors
-    />
-  );
+  return <PaymentBrandIcon id={id} size={size} />;
 }
 
 function RoundBtn({ onPress, children }: { onPress: () => void; children: ReactNode }) {
@@ -891,11 +856,7 @@ export function CheckoutScreen({
                     accessibilityLabel={w.label}
                   >
                     <View style={styles.walletIconWrap}>
-                      {w.icon ? (
-                        <Image source={w.icon} style={styles.walletIcon} resizeMode="contain" />
-                      ) : (
-                        <UpiMark size={26} />
-                      )}
+                      <PaymentBrandIcon id={w.id} size={28} />
                     </View>
                     <Text style={[styles.walletLabel, active && styles.walletLabelActive]} numberOfLines={1}>
                       {w.label}
@@ -1734,14 +1695,9 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: FIELD,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-  },
-  walletIcon: {
-    width: 28,
-    height: 28,
   },
   walletLabel: {
     fontFamily: fonts.medium,
