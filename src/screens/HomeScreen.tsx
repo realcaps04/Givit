@@ -188,15 +188,33 @@ function formatInr(amount: number): string {
 }
 
 function toDetailProduct(product: Product): DetailProduct {
-  const others = ALL_PRODUCTS.filter((p) => p.id !== product.id).slice(0, 2);
-  const gallery = [product.image, ...others.map((p) => p.image)];
+  const others = ALL_PRODUCTS.filter((p) => p.id !== product.id);
+  // Prefer unique titles / images for related picks
+  const seen = new Set<string>();
+  const relatedPool = others.filter((p) => {
+    if (!p.price) return false;
+    if (seen.has(p.title)) return false;
+    seen.add(p.title);
+    return true;
+  });
+  // Deterministic rotate based on id so each product gets a varied set
+  const offset = product.id.charCodeAt(0) % Math.max(relatedPool.length, 1);
+  const rotated = [...relatedPool.slice(offset), ...relatedPool.slice(0, offset)];
+  const related = rotated.slice(0, 6).map((p) => ({
+    id: p.id,
+    title: p.title,
+    price: p.price ?? '₹ —',
+    image: p.image,
+  }));
+
+  const gallerySources = others.slice(0, 2);
+  const gallery = [product.image, ...gallerySources.map((p) => p.image)];
   while (gallery.length < 3) gallery.push(product.image);
 
   const sale = parsePriceAmount(product.price);
   const discountPool = [15, 20, 25, 30, 35, 40];
   const discountPercent = discountPool[product.id.charCodeAt(product.id.length - 1) % discountPool.length];
   const originalAmount = sale ? Math.round(sale / (1 - discountPercent / 100)) : null;
-  // Round original to nearest 50 for cleaner MRPs
   const originalRounded =
     originalAmount != null ? Math.ceil(originalAmount / 50) * 50 : null;
 
@@ -212,7 +230,15 @@ function toDetailProduct(product: Product): DetailProduct {
     reviews: 231,
     colors: ['#2B2B2B', '#E8DCC8', '#D0D4DA'],
     gallery,
+    related,
     description: `Make every occasion memorable with ${product.title}. Carefully selected for quality and presentation, it arrives gift-ready with premium finishing details. Designed to delight — whether you’re surprising someone special or treating yourself.`,
+    packageIncludes: [
+      `1 × ${product.title}`,
+      'Premium gift box with ribbon',
+      'Protective inner padding',
+      'Care & usage card',
+      'Complimentary greeting note',
+    ],
     seller: {
       name: 'Givit Official',
       location: 'Mumbai, India',
@@ -353,6 +379,63 @@ function stopCardNav(e: unknown) {
   if (typeof (e as { stopPropagation?: () => void }).stopPropagation === 'function') {
     (e as { stopPropagation: () => void }).stopPropagation();
   }
+}
+
+function VerifiedIcon({ size = 14 }: { size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx="12" cy="12" r="10" fill={BLUE} />
+      <Path
+        d="M7.5 12.2l3 3 6-6.5"
+        stroke="#FFFFFF"
+        strokeWidth={2.2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+function VerifiedBadge() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <Pressable
+        onPress={(e) => {
+          stopCardNav(e);
+          setOpen(true);
+        }}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel="Givit verified"
+        style={({ pressed }) => [styles.verifiedBtn, pressed && styles.pressed]}
+      >
+        <VerifiedIcon />
+      </Pressable>
+
+      <Modal
+        visible={open}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setOpen(false)}
+        statusBarTranslucent
+      >
+        <Pressable style={styles.verifiedBackdrop} onPress={() => setOpen(false)}>
+          <Pressable
+            style={styles.verifiedPopup}
+            onPress={(e) => stopCardNav(e)}
+          >
+            <VerifiedIcon size={22} />
+            <View style={styles.verifiedPopupCopy}>
+              <Text style={styles.verifiedPopupTitle}>Givit verified</Text>
+              <Text style={styles.verifiedPopupSub}>Authenticated quality gift</Text>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+    </>
+  );
 }
 
 function FavButton({
@@ -517,6 +600,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
   if (selectedProduct) {
     return (
       <ProductDetailScreen
+        key={selectedProduct.id}
         product={toDetailProduct(selectedProduct)}
         favorited={!!favorites[selectedProduct.id]}
         onBack={() => setSelectedProduct(null)}
@@ -524,6 +608,10 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
         onShare={() => Alert.alert('Share', 'Sharing coming soon.')}
         onAddToCart={() => addToCart(selectedProduct.title)}
         onBuyNow={buyNow}
+        onOpenRelated={(productId) => {
+          const next = ALL_PRODUCTS.find((p) => p.id === productId);
+          if (next) setSelectedProduct(next);
+        }}
       />
     );
   }
