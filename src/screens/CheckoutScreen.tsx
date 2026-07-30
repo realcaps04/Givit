@@ -23,6 +23,31 @@ const DANGER = '#E11D48';
 
 const VISA_MARK = require('../../assets/brands/visa.png');
 
+const UPI_APP_ICONS = {
+  phonepe: require('../../assets/brands/upi/phonepe.png'),
+  gpay: require('../../assets/brands/upi/gpay.png'),
+  paytm: require('../../assets/brands/upi/paytm.png'),
+  amazonpay: require('../../assets/brands/upi/amazonpay.png'),
+  whatsapp: require('../../assets/brands/upi/whatsapp.png'),
+  jiopay: require('../../assets/brands/upi/jiopay.png'),
+  mobikwik: require('../../assets/brands/upi/mobikwik.png'),
+  cred: require('../../assets/brands/upi/cred.png'),
+} as const;
+
+type UpiAppId = keyof typeof UPI_APP_ICONS | 'upi';
+type PayExtra = UpiAppId | 'cod';
+
+const UPI_APPS: { id: UpiAppId; label: string; icon?: ImageSourcePropType }[] = [
+  { id: 'phonepe', label: 'PhonePe', icon: UPI_APP_ICONS.phonepe },
+  { id: 'gpay', label: 'GPay', icon: UPI_APP_ICONS.gpay },
+  { id: 'paytm', label: 'Paytm', icon: UPI_APP_ICONS.paytm },
+  { id: 'amazonpay', label: 'Amazon Pay', icon: UPI_APP_ICONS.amazonpay },
+  { id: 'whatsapp', label: 'WhatsApp', icon: UPI_APP_ICONS.whatsapp },
+  { id: 'jiopay', label: 'JioPay', icon: UPI_APP_ICONS.jiopay },
+  { id: 'mobikwik', label: 'MobiKwik', icon: UPI_APP_ICONS.mobikwik },
+  { id: 'upi', label: 'UPI ID' },
+];
+
 export type CheckoutItem = {
   id: string;
   title: string;
@@ -240,65 +265,39 @@ function MastercardLogo() {
   );
 }
 
-function GooglePayLogo() {
+function UpiMark({ size = 22 }: { size?: number }) {
   return (
-    <View style={styles.brandLogoRow}>
-      <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
-        <Path d="M22.6 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h5.9c-.3 1.4-1 2.5-2.1 3.3v2.7h3.4c2-1.8 3.4-4.5 3.4-8Z" fill="#4285F4" />
-        <Path d="M12 23c2.9 0 5.3-.9 7.1-2.6l-3.4-2.7c-1 .6-2.2 1-3.7 1-2.8 0-5.2-1.9-6.1-4.4H2.4v2.8C4.2 20.7 7.8 23 12 23Z" fill="#34A853" />
-        <Path d="M5.9 14.3c-.2-.7-.4-1.4-.4-2.3s.1-1.6.4-2.3V7H2.4C1.6 8.5 1.1 10.2 1.1 12s.5 3.5 1.3 5l3.5-2.7Z" fill="#FBBC05" />
-        <Path d="M12 5.4c1.6 0 3 .5 4.1 1.6L19.2 4C17.3 2.2 14.9 1 12 1 7.8 1 4.2 3.3 2.4 7l3.5 2.7c.9-2.5 3.3-4.3 6.1-4.3Z" fill="#EA4335" />
-      </Svg>
-      <Text style={styles.gpayText}>Pay</Text>
-    </View>
+    <Svg width={size} height={Math.round(size * 0.58)} viewBox="0 0 48 28" fill="none">
+      <Path d="M0.8 1.2 14.2 14 0.8 26.8 5.6 26.8 19 14 5.6 1.2Z" fill="#FF671F" />
+      <Path
+        d="M13.2 1.2 26.6 14 13.2 26.8 18 26.8 31.4 14 18 1.2Z"
+        fill="#FFFFFF"
+        stroke="#C9CCD4"
+        strokeWidth={0.9}
+      />
+      <Path d="M25.6 1.2 39 14 25.6 26.8 30.4 26.8 43.8 14 30.4 1.2Z" fill="#097A4B" />
+    </Svg>
   );
 }
 
-function ApplePayLogo() {
+function PayAppIcon({
+  id,
+  size = 28,
+}: {
+  id: PayExtra | null;
+  size?: number;
+}) {
+  if (!id || id === 'cod') return null;
+  if (id === 'upi') return <UpiMark size={size} />;
+  const src = UPI_APP_ICONS[id as keyof typeof UPI_APP_ICONS];
+  if (!src) return <UpiMark size={size} />;
   return (
-    <View style={styles.brandLogoRow}>
-      <Svg width={16} height={18} viewBox="0 0 16 20" fill="none">
-        <Path
-          d="M13.1 10.5c0-2.4 2-3.5 2.1-3.6-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.6.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.1 1-4 2.5-1.7 3-.5 7.4 1.2 9.8.9 1.2 1.9 2.5 3.2 2.4 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.3.8 1.4 0 2.2-1.2 3.1-2.4.9-1.4 1.3-2.7 1.3-2.8-.1 0-2.5-1-2.5-3.9ZM10.9 3.3c.7-.8 1.1-2 1-3.1-1 .1-2.2.7-2.9 1.5-.6.7-1.2 1.9-1 3 1.1.1 2.2-.5 2.9-1.4Z"
-          fill="#111111"
-        />
-      </Svg>
-      <Text style={styles.applePayText}>Pay</Text>
-    </View>
-  );
-}
-
-function PayPalLogo() {
-  return (
-    <View style={styles.brandLogoRow}>
-      <Text style={styles.paypalPay}>Pay</Text>
-      <Text style={styles.paypalPal}>Pal</Text>
-    </View>
-  );
-}
-
-function UpiLogo() {
-  // NPCI UPI fast-forward: three tricolor chevrons (saffron / white / green)
-  return (
-    <View style={styles.brandLogoRow}>
-      <Svg width={28} height={16} viewBox="0 0 48 28" fill="none">
-        <Path
-          d="M0.8 1.2 14.2 14 0.8 26.8 5.6 26.8 19 14 5.6 1.2Z"
-          fill="#FF671F"
-        />
-        <Path
-          d="M13.2 1.2 26.6 14 13.2 26.8 18 26.8 31.4 14 18 1.2Z"
-          fill="#FFFFFF"
-          stroke="#C9CCD4"
-          strokeWidth={0.9}
-        />
-        <Path
-          d="M25.6 1.2 39 14 25.6 26.8 30.4 26.8 43.8 14 30.4 1.2Z"
-          fill="#097A4B"
-        />
-      </Svg>
-      <Text style={styles.upiText}>UPI</Text>
-    </View>
+    <Image
+      source={src}
+      style={{ width: size, height: size }}
+      resizeMode="contain"
+      accessibilityIgnoresInvertColors
+    />
   );
 }
 
@@ -429,7 +428,7 @@ export function CheckoutScreen({
   const [pickupName, setPickupName] = useState('Alex Morgan');
   const [pickupPhone, setPickupPhone] = useState('+91 98765 43210');
   const [cardId, setCardId] = useState(CARDS[0].id);
-  const [payExtra, setPayExtra] = useState<'gpay' | 'apple' | 'paypal' | 'cod' | 'upi' | null>(null);
+  const [payExtra, setPayExtra] = useState<PayExtra | null>(null);
   const [upiId, setUpiId] = useState('');
   const [couponCode, setCouponCode] = useState('');
   const [appliedVoucherId, setAppliedVoucherId] = useState<string | null>(null);
@@ -451,18 +450,13 @@ export function CheckoutScreen({
   const total = Math.max(0, subtotal - discount);
 
   const selectedCard = CARDS.find((c) => c.id === cardId);
+  const selectedUpiApp = UPI_APPS.find((a) => a.id === payExtra) ?? null;
   const payLabel = payExtra
-    ? payExtra === 'gpay'
-      ? 'Google Pay'
-      : payExtra === 'apple'
-        ? 'Apple Pay'
-        : payExtra === 'paypal'
-          ? 'PayPal'
-          : payExtra === 'upi'
-            ? upiId.trim()
-              ? `UPI · ${upiId.trim()}`
-              : 'UPI'
-            : 'Cash on Delivery'
+    ? payExtra === 'cod'
+      ? 'Cash on Delivery'
+      : upiId.trim()
+        ? `${selectedUpiApp?.label ?? 'UPI'} · ${upiId.trim()}`
+        : selectedUpiApp?.label ?? 'UPI'
     : selectedCard
       ? `${selectedCard.brand === 'visa' ? 'Visa' : 'Mastercard'} •••• ${selectedCard.last4}`
       : 'Card';
@@ -884,16 +878,9 @@ export function CheckoutScreen({
               })}
             </ScrollView>
 
-            <Text style={styles.sectionLabel}>Wallets & apps</Text>
+            <Text style={styles.sectionLabel}>UPI & wallets</Text>
             <View style={styles.walletGrid}>
-              {(
-                [
-                  { id: 'gpay' as const, label: 'Google Pay', Logo: GooglePayLogo },
-                  { id: 'apple' as const, label: 'Apple Pay', Logo: ApplePayLogo },
-                  { id: 'paypal' as const, label: 'PayPal', Logo: PayPalLogo },
-                  { id: 'upi' as const, label: 'UPI', Logo: UpiLogo },
-                ]
-              ).map((w) => {
+              {UPI_APPS.map((w) => {
                 const active = payExtra === w.id;
                 return (
                   <Pressable
@@ -903,15 +890,26 @@ export function CheckoutScreen({
                     accessibilityRole="button"
                     accessibilityLabel={w.label}
                   >
-                    <w.Logo />
+                    <View style={styles.walletIconWrap}>
+                      {w.icon ? (
+                        <Image source={w.icon} style={styles.walletIcon} resizeMode="contain" />
+                      ) : (
+                        <UpiMark size={26} />
+                      )}
+                    </View>
+                    <Text style={[styles.walletLabel, active && styles.walletLabelActive]} numberOfLines={1}>
+                      {w.label}
+                    </Text>
                   </Pressable>
                 );
               })}
             </View>
 
-            {payExtra === 'upi' ? (
+            {payExtra && payExtra !== 'cod' ? (
               <View style={styles.upiBox}>
-                <Text style={styles.upiBoxTitle}>Enter UPI ID</Text>
+                <Text style={styles.upiBoxTitle}>
+                  {payExtra === 'upi' ? 'Enter UPI ID' : `UPI ID for ${selectedUpiApp?.label}`}
+                </Text>
                 <TextInput
                   value={upiId}
                   onChangeText={setUpiId}
@@ -1138,14 +1136,8 @@ export function CheckoutScreen({
                     />
                   ) : !payExtra && selectedCard?.brand === 'mastercard' ? (
                     <MastercardLogo />
-                  ) : payExtra === 'upi' ? (
-                    <UpiLogo />
-                  ) : payExtra === 'gpay' ? (
-                    <GooglePayLogo />
-                  ) : payExtra === 'apple' ? (
-                    <ApplePayLogo />
-                  ) : payExtra === 'paypal' ? (
-                    <PayPalLogo />
+                  ) : payExtra && payExtra !== 'cod' ? (
+                    <PayAppIcon id={payExtra} size={30} />
                   ) : (
                     <Text style={styles.reviewPayFallback}>COD</Text>
                   )}
@@ -1722,53 +1714,43 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   walletBtn: {
-    width: '47%',
-    height: 56,
+    width: '22.5%',
+    minWidth: 72,
     borderRadius: 14,
     borderWidth: 1.5,
     borderColor: '#E4E4EA',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 10,
+    gap: 6,
   },
   walletBtnActive: {
     borderColor: BLUE,
     backgroundColor: 'rgba(0, 76, 255, 0.06)',
   },
-  brandLogoRow: {
-    flexDirection: 'row',
+  walletIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: FIELD,
     alignItems: 'center',
-    gap: 6,
+    justifyContent: 'center',
+    overflow: 'hidden',
   },
-  gpayText: {
+  walletIcon: {
+    width: 28,
+    height: 28,
+  },
+  walletLabel: {
     fontFamily: fonts.medium,
-    fontSize: 16,
-    color: '#5F6368',
-    marginTop: 1,
+    fontSize: 10,
+    color: MUTED,
+    textAlign: 'center',
   },
-  applePayText: {
-    fontFamily: fonts.medium,
-    fontSize: 17,
-    color: '#111111',
-    letterSpacing: -0.3,
-  },
-  paypalPay: {
-    fontFamily: fonts.bold,
-    fontSize: 16,
-    color: '#003087',
-  },
-  paypalPal: {
-    fontFamily: fonts.bold,
-    fontSize: 16,
-    color: '#009CDE',
-    marginLeft: -2,
-  },
-  upiText: {
-    fontFamily: fonts.bold,
-    fontSize: 15,
-    color: '#1A1A1A',
-    letterSpacing: 1.2,
+  walletLabelActive: {
+    color: BLUE,
   },
   upiBox: {
     marginBottom: 16,
