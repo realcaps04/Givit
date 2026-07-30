@@ -2,6 +2,7 @@ import { Platform, Pressable, StyleSheet, Text, View, type TextStyle } from 'rea
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowRight } from '../components/ArrowRight';
 import { GiftLogo } from '../components/GiftLogo';
+import { SoftGiftDecor } from '../components/SoftGiftDecor';
 import { fonts } from '../theme';
 
 const BLUE = '#004CFF';
@@ -36,6 +37,8 @@ export function WelcomeScreen({ onGetStarted, onHaveAccount }: WelcomeScreenProp
         },
       ]}
     >
+      <SoftGiftDecor />
+
       <View style={styles.topBlock}>
         <GiftLogo size={72} />
         <Text style={[styles.title, titleWeight]}>Givit</Text>
@@ -44,6 +47,8 @@ export function WelcomeScreen({ onGetStarted, onHaveAccount }: WelcomeScreenProp
           story worth celebrating
         </Text>
       </View>
+
+      <View style={styles.spacer} />
 
       <View style={styles.bottomBlock}>
         <Pressable
@@ -77,10 +82,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 24,
     justifyContent: 'space-between',
+    overflow: 'hidden',
   },
   topBlock: {
     alignItems: 'center',
     paddingTop: 28,
+    zIndex: 1,
   },
   title: {
     marginTop: 12,
@@ -100,10 +107,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     opacity: 0.85,
   },
+  spacer: {
+    flex: 1,
+  },
   bottomBlock: {
     width: '100%',
     gap: 14,
     paddingBottom: 8,
+    zIndex: 1,
   },
   cta: {
     height: 52,

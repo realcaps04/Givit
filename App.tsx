@@ -26,13 +26,14 @@ import {
   type TransitionDirection,
 } from './src/components/ScreenTransition';
 import { useAppUpdate } from './src/hooks/useAppUpdate';
+import { loadRoute, saveRoute, type AppRoute } from './src/navigation/routePersistence';
 import { colors, fonts } from './src/theme';
 
 if (Platform.OS !== 'web') {
   SplashScreen.preventAutoHideAsync().catch(() => undefined);
 }
 
-type Route = 'boot' | 'welcome' | 'login' | 'signup';
+type Route = 'boot' | AppRoute;
 
 export default function App() {
   const [fontsLoaded, fontError] = useFonts({
@@ -60,14 +61,30 @@ export default function App() {
 
   useEffect(() => {
     if (!fontsReady) return;
-    setNavDirection('none');
-    setRoute('welcome');
-    if (Platform.OS !== 'web') {
-      SplashScreen.hideAsync().catch(() => undefined);
-    }
+    let cancelled = false;
+
+    (async () => {
+      const saved = await loadRoute();
+      if (cancelled) return;
+      setNavDirection('none');
+      setRoute(saved ?? 'welcome');
+      if (Platform.OS !== 'web') {
+        SplashScreen.hideAsync().catch(() => undefined);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [fontsReady]);
 
-  const goTo = (next: Route, direction: TransitionDirection) => {
+  useEffect(() => {
+    if (route === 'boot') return;
+    void saveRoute(route);
+  }, [route]);
+
+  const goTo = (next: AppRoute, direction: TransitionDirection) => {
+    void saveRoute(next);
     setNavDirection(direction);
     setRoute(next);
   };
@@ -110,7 +127,7 @@ export default function App() {
         <TransitionHost routeKey={route} direction={navDirection}>
           {screen}
         </TransitionHost>
-        <HardRefreshButton />
+        <HardRefreshButton route={route} />
         <UpdateAvailableModal
           update={update}
           onUpdate={update.applyUpdate}

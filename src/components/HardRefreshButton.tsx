@@ -10,6 +10,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { applyAppUpdate } from '../hooks/useAppUpdate';
+import { saveRoute, type AppRoute } from '../navigation/routePersistence';
 
 const ICON = '#8A8A96';
 
@@ -33,8 +34,12 @@ function RefreshIcon() {
   );
 }
 
-/** Testing control — hard-reloads the UI on every screen */
-export function HardRefreshButton() {
+type HardRefreshButtonProps = {
+  route: AppRoute;
+};
+
+/** Testing control — hard-reloads the UI while keeping the current page */
+export function HardRefreshButton({ route }: HardRefreshButtonProps) {
   const insets = useSafeAreaInsets();
   const [busy, setBusy] = useState(false);
 
@@ -42,6 +47,7 @@ export function HardRefreshButton() {
     if (busy) return;
     setBusy(true);
     try {
+      await saveRoute(route);
       if (Platform.OS === 'web') {
         await applyAppUpdate();
         return;
@@ -51,7 +57,6 @@ export function HardRefreshButton() {
         return;
       }
     } finally {
-      // Keep spinner if reload is in progress
       setTimeout(() => setBusy(false), 1200);
     }
   };
