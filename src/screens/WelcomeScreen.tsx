@@ -14,7 +14,6 @@ type WelcomeScreenProps = {
   onHaveAccount: () => void;
 };
 
-/** Readable weight — light embolden only (heavy stroke made Gropled illegible) */
 const titleWeight: TextStyle =
   Platform.OS === 'web'
     ? {
@@ -32,13 +31,13 @@ export function WelcomeScreen({ onGetStarted, onHaveAccount }: WelcomeScreenProp
       style={[
         styles.root,
         {
-          paddingTop: insets.top,
-          paddingBottom: Math.max(insets.bottom, 20),
+          paddingTop: Math.max(insets.top, 12) + 8,
+          paddingBottom: Math.max(insets.bottom, 16),
         },
       ]}
     >
       <View style={styles.topBlock}>
-        <GiftLogo size={134} />
+        <GiftLogo size={88} />
         <Text style={[styles.title, titleWeight]}>Givit</Text>
         <Text style={styles.subtitle}>
           Beautiful gifts for every{'\n'}
@@ -77,39 +76,38 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 24,
+    justifyContent: 'space-between',
   },
   topBlock: {
-    flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingBottom: 40,
+    paddingTop: 28,
   },
   title: {
-    marginTop: 28,
+    marginTop: 16,
     fontFamily: fonts.display,
-    fontSize: 40,
-    lineHeight: 48,
+    fontSize: 34,
+    lineHeight: 40,
     letterSpacing: 0.2,
     color: TITLE,
     textAlign: 'center',
   },
   subtitle: {
-    marginTop: 12,
+    marginTop: 8,
     fontFamily: fonts.regular,
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 15,
+    lineHeight: 22,
     color: BODY,
     textAlign: 'center',
     opacity: 0.85,
   },
   bottomBlock: {
     width: '100%',
-    paddingBottom: 28,
-    gap: 20,
+    paddingBottom: 12,
+    gap: 16,
   },
   cta: {
-    height: 56,
-    borderRadius: 16,
+    height: 52,
+    borderRadius: 14,
     backgroundColor: BLUE,
     alignItems: 'center',
     justifyContent: 'center',
@@ -124,7 +122,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    paddingVertical: 4,
+    paddingVertical: 2,
   },
   accountText: {
     fontFamily: fonts.regular,

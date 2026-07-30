@@ -21,7 +21,12 @@
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro",
-      "output": "single"
+      "output": "single",
+      "name": "Givit",
+      "shortName": "Givit",
+      "description": "Beautiful gifts for every story worth celebrating.",
+      "themeColor": "#004CFF",
+      "backgroundColor": "#FFFFFF"
     },
     "plugins": [
       "expo-font",
