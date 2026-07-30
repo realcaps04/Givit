@@ -305,6 +305,7 @@ export function CreateAccountScreen({
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
+              underlineColorAndroid="transparent"
               style={[styles.field, showError('email') ? styles.fieldError : null]}
             />
             {showError('email') ? <Text style={styles.errorText}>{showError('email')}</Text> : null}
@@ -320,6 +321,7 @@ export function CreateAccountScreen({
                 placeholderTextColor={PLACEHOLDER}
                 secureTextEntry={hidden}
                 autoComplete="password-new"
+                underlineColorAndroid="transparent"
                 style={[
                   styles.field,
                   styles.passwordField,
@@ -351,6 +353,7 @@ export function CreateAccountScreen({
                 placeholderTextColor={PLACEHOLDER}
                 secureTextEntry={confirmHidden}
                 autoComplete="password-new"
+                underlineColorAndroid="transparent"
                 style={[
                   styles.field,
                   styles.passwordField,
@@ -397,6 +400,7 @@ export function CreateAccountScreen({
                 placeholder="Phone number"
                 placeholderTextColor={PLACEHOLDER}
                 keyboardType="phone-pad"
+                underlineColorAndroid="transparent"
                 style={styles.phoneInput}
               />
             </View>
@@ -533,6 +537,14 @@ const styles = StyleSheet.create({
     color: TITLE,
     borderWidth: 1.5,
     borderColor: 'transparent',
+    ...(Platform.OS === 'web'
+      ? ({
+          outlineStyle: 'none',
+          outlineWidth: 0,
+          outlineColor: 'transparent',
+          boxShadow: 'none',
+        } as object)
+      : null),
   },
   fieldError: {
     borderColor: BORDER_ERR,
@@ -600,6 +612,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: TITLE,
     padding: 0,
+    ...(Platform.OS === 'web'
+      ? ({
+          outlineStyle: 'none',
+          outlineWidth: 0,
+          outlineColor: 'transparent',
+          boxShadow: 'none',
+        } as object)
+      : null),
   },
   actions: {
     marginTop: 28,
