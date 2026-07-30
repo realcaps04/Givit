@@ -33,7 +33,6 @@ const BLUE_SOFT = 'rgba(0, 76, 255, 0.10)';
 const TEXT = '#1A1A1A';
 const MUTED = '#8A8A96';
 const FIELD = '#F3F4F8';
-const GREEN = '#16A34A';
 const PINK_CARD = '#F8E8EE';
 const CREAM_CARD = '#F7F0E4';
 const useNative = Platform.OS !== 'web';
@@ -123,43 +122,44 @@ type Product = {
   freeShip?: boolean;
   image: ImageSourcePropType;
   tone?: string;
+  categories: string[];
 };
 
 const HOT_SALES: Product[] = [
-  { id: '1', title: 'Festive Gift Stack', price: '₹ 2,499', freeShip: true, image: require('../../assets/products/p01.jpg') },
-  { id: '2', title: 'Pink Ribbon Box', price: '₹ 1,899', freeShip: true, image: require('../../assets/products/p02.jpg') },
-  { id: '3', title: 'Artisan Chocolates', price: '₹ 1,299', freeShip: true, image: require('../../assets/products/p03.jpg') },
-  { id: '4', title: 'Kraft & Bow Classic', price: '₹ 999', freeShip: true, image: require('../../assets/products/p04.jpg') },
-  { id: '5', title: 'Wrapped Surprises', price: '₹ 2,199', freeShip: true, image: require('../../assets/products/p05.jpg') },
-  { id: '6', title: 'Black Gold Luxe', price: '₹ 3,499', freeShip: true, image: require('../../assets/products/p06.jpg') },
+  { id: '1', title: 'Festive Gift Stack', price: '₹ 2,499', freeShip: true, image: require('../../assets/products/p01.jpg'), categories: ['Gifts'] },
+  { id: '2', title: 'Pink Ribbon Box', price: '₹ 1,899', freeShip: true, image: require('../../assets/products/p02.jpg'), categories: ['Gifts', 'Flowers', 'Kids'] },
+  { id: '3', title: 'Artisan Chocolates', price: '₹ 1,299', freeShip: true, image: require('../../assets/products/p03.jpg'), categories: ['Gourmet', 'Gifts'] },
+  { id: '4', title: 'Kraft & Bow Classic', price: '₹ 999', freeShip: true, image: require('../../assets/products/p04.jpg'), categories: ['Gifts'] },
+  { id: '5', title: 'Wrapped Surprises', price: '₹ 2,199', freeShip: true, image: require('../../assets/products/p05.jpg'), categories: ['Gifts', 'Kids', 'Flowers'] },
+  { id: '6', title: 'Black Gold Luxe', price: '₹ 3,499', freeShip: true, image: require('../../assets/products/p06.jpg'), categories: ['Gifts', 'Fashion'] },
 ];
 
 const FEATURED: Product[] = [
-  { id: 'f1', title: 'Editor’s Pick · Luxe Box', price: '₹ 4,299', freeShip: true, image: require('../../assets/products/p06.jpg') },
-  { id: 'f2', title: 'Best for Her · Beauty Kit', price: '₹ 2,799', freeShip: true, image: require('../../assets/products/p07.jpg') },
-  { id: 'f3', title: 'Tech Moments · Watch', price: '₹ 6,999', freeShip: true, image: require('../../assets/products/r01.jpg') },
-  { id: 'f4', title: 'Gourmet Treat Tower', price: '₹ 1,599', freeShip: true, image: require('../../assets/products/p08.jpg') },
+  { id: 'f1', title: 'Editor’s Pick · Luxe Box', price: '₹ 4,299', freeShip: true, image: require('../../assets/products/p06.jpg'), categories: ['Gifts', 'Fashion'] },
+  { id: 'f2', title: 'Best for Her · Beauty Kit', price: '₹ 2,799', freeShip: true, image: require('../../assets/products/p07.jpg'), categories: ['Fashion', 'Gifts'] },
+  { id: 'f3', title: 'Tech Moments · Watch', price: '₹ 6,999', freeShip: true, image: require('../../assets/products/r01.jpg'), categories: ['Tech', 'Gifts'] },
+  { id: 'f4', title: 'Gourmet Treat Tower', price: '₹ 1,599', freeShip: true, image: require('../../assets/products/p08.jpg'), categories: ['Gourmet', 'Gifts'] },
 ];
 
 const MORE_GIFTS: Product[] = [
-  { id: 'm1', title: 'Beauty Gift Kit', price: '₹ 2,799', freeShip: true, image: require('../../assets/products/p07.jpg') },
-  { id: 'm2', title: 'Celebration Cake', price: '₹ 1,599', freeShip: false, image: require('../../assets/products/p08.jpg') },
-  { id: 'm3', title: 'Style Essentials', price: '₹ 4,299', freeShip: true, image: require('../../assets/products/p09.jpg') },
-  { id: 'm4', title: 'Weekend Treat Box', price: '₹ 1,149', freeShip: true, image: require('../../assets/products/p10.jpg') },
-  { id: 'm5', title: 'Soft Knit Gift', price: '₹ 1,999', freeShip: true, image: require('../../assets/products/p11.jpg') },
-  { id: 'm6', title: 'Travel Companion', price: '₹ 3,299', freeShip: true, image: require('../../assets/products/p12.jpg') },
-  { id: 'm7', title: 'Skincare Duo', price: '₹ 2,249', freeShip: true, image: require('../../assets/products/more01.jpg') },
-  { id: 'm8', title: 'Everyday Classic', price: '₹ 1,799', freeShip: false, image: require('../../assets/products/more02.jpg') },
-  { id: 'm9', title: 'Fragrance Mini', price: '₹ 2,599', freeShip: true, image: require('../../assets/products/more03.jpg') },
-  { id: 'm10', title: 'Camera Moments', price: '₹ 5,499', freeShip: true, image: require('../../assets/products/more04.jpg') },
-  { id: 'm11', title: 'Glow Essentials', price: '₹ 1,899', freeShip: true, image: require('../../assets/products/more05.jpg') },
-  { id: 'm12', title: 'Smart Watch Gift', price: '₹ 6,999', freeShip: true, image: require('../../assets/products/r01.jpg') },
+  { id: 'm1', title: 'Beauty Gift Kit', price: '₹ 2,799', freeShip: true, image: require('../../assets/products/p07.jpg'), categories: ['Fashion', 'Gifts'] },
+  { id: 'm2', title: 'Celebration Cake', price: '₹ 1,599', freeShip: false, image: require('../../assets/products/p08.jpg'), categories: ['Gourmet', 'Kids'] },
+  { id: 'm3', title: 'Style Essentials', price: '₹ 4,299', freeShip: true, image: require('../../assets/products/p09.jpg'), categories: ['Fashion'] },
+  { id: 'm4', title: 'Weekend Treat Box', price: '₹ 1,149', freeShip: true, image: require('../../assets/products/p10.jpg'), categories: ['Gourmet', 'Kids', 'Gifts'] },
+  { id: 'm5', title: 'Soft Knit Gift', price: '₹ 1,999', freeShip: true, image: require('../../assets/products/p11.jpg'), categories: ['Fashion', 'Kids'] },
+  { id: 'm6', title: 'Travel Companion', price: '₹ 3,299', freeShip: true, image: require('../../assets/products/p12.jpg'), categories: ['Tech', 'Fashion'] },
+  { id: 'm7', title: 'Skincare Duo', price: '₹ 2,249', freeShip: true, image: require('../../assets/products/more01.jpg'), categories: ['Fashion', 'Plants'] },
+  { id: 'm8', title: 'Everyday Classic', price: '₹ 1,799', freeShip: false, image: require('../../assets/products/more02.jpg'), categories: ['Fashion', 'Plants'] },
+  { id: 'm9', title: 'Fragrance Mini', price: '₹ 2,599', freeShip: true, image: require('../../assets/products/more03.jpg'), categories: ['Flowers', 'Fashion'] },
+  { id: 'm10', title: 'Camera Moments', price: '₹ 5,499', freeShip: true, image: require('../../assets/products/more04.jpg'), categories: ['Tech'] },
+  { id: 'm11', title: 'Glow Essentials', price: '₹ 1,899', freeShip: true, image: require('../../assets/products/more05.jpg'), categories: ['Plants', 'Fashion'] },
+  { id: 'm12', title: 'Smart Watch Gift', price: '₹ 6,999', freeShip: true, image: require('../../assets/products/r01.jpg'), categories: ['Tech', 'Gifts'] },
 ];
 
 const RECENT: Product[] = [
-  { id: 'r1', title: 'Smart Watch Gift', image: require('../../assets/products/r01.jpg'), tone: PINK_CARD },
-  { id: 'r2', title: 'Studio Headphones', image: require('../../assets/products/r02.jpg'), tone: CREAM_CARD },
-  { id: 'r3', title: 'Sneaker Drop', image: require('../../assets/products/r03.jpg'), tone: '#E8F0FE' },
+  { id: 'r1', title: 'Smart Watch Gift', image: require('../../assets/products/r01.jpg'), tone: PINK_CARD, categories: ['Tech', 'Gifts'] },
+  { id: 'r2', title: 'Studio Headphones', image: require('../../assets/products/r02.jpg'), tone: CREAM_CARD, categories: ['Tech'] },
+  { id: 'r3', title: 'Sneaker Drop', image: require('../../assets/products/r03.jpg'), tone: '#E8F0FE', categories: ['Fashion'] },
 ];
 
 const BANNER_IMG = require('../../assets/products/banner.jpg');
@@ -501,6 +501,37 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
     [cartItems],
   );
 
+  const featuredItems = useMemo(() => {
+    const fromFeatured = FEATURED.filter((p) => p.categories.includes(category));
+    if (fromFeatured.length >= 2) return fromFeatured;
+    return ALL_PRODUCTS.filter((p) => p.categories.includes(category) && p.price).slice(0, 4);
+  }, [category]);
+
+  const hotItems = useMemo(() => {
+    const used = new Set(featuredItems.map((p) => p.id));
+    const fromHot = HOT_SALES.filter((p) => p.categories.includes(category) && !used.has(p.id));
+    if (fromHot.length >= 2) return fromHot;
+    return ALL_PRODUCTS.filter(
+      (p) => p.categories.includes(category) && p.price && !used.has(p.id),
+    ).slice(0, 6);
+  }, [category, featuredItems]);
+
+  const moreItems = useMemo(() => {
+    const used = new Set([...featuredItems, ...hotItems].map((p) => p.id));
+    const fromMore = MORE_GIFTS.filter((p) => p.categories.includes(category) && !used.has(p.id));
+    if (fromMore.length > 0) return fromMore;
+    return ALL_PRODUCTS.filter(
+      (p) => p.categories.includes(category) && p.price && !used.has(p.id),
+    );
+  }, [category, featuredItems, hotItems]);
+
+  const recentItems = useMemo(
+    () => RECENT.filter((p) => p.categories.includes(category)),
+    [category],
+  );
+
+  const homeScrollRef = useRef<ScrollView>(null);
+
   const switchTab = (next: TabKey) => {
     if (next === tab || searchOpen || switchingRef.current) return;
     const from = TAB_ORDER.indexOf(tab);
@@ -650,6 +681,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
         <TransitionHost routeKey={tab} direction={tabDirection}>
           {tab === 'home' ? (
             <ScrollView
+              ref={homeScrollRef}
               style={styles.scroll}
               contentContainerStyle={styles.scrollContent}
               showsVerticalScrollIndicator={false}
@@ -714,7 +746,10 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                   return (
                     <Pressable
                       key={c}
-                      onPress={() => setCategory(c)}
+                      onPress={() => {
+                        setCategory(c);
+                        homeScrollRef.current?.scrollTo({ y: 0, animated: true });
+                      }}
                       style={[styles.catChip, active && styles.catChipActive]}
                     >
                       <Text style={[styles.catLabel, active && styles.catLabelActive]}>{c}</Text>
@@ -724,7 +759,9 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
               </ScrollView>
 
               <View style={styles.sectionHead}>
-                <Text style={styles.sectionTitle}>Featured</Text>
+                <Text style={styles.sectionTitle}>
+                  {category === 'Gifts' ? 'Featured' : `Featured in ${category}`}
+                </Text>
                 <View style={styles.dots}>
                   <View style={[styles.dot, styles.dotActive]} />
                   <View style={styles.dot} />
@@ -732,12 +769,13 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                 </View>
               </View>
 
+              {featuredItems.length > 0 ? (
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.cardsRow}
               >
-                {FEATURED.map((item) => (
+                {featuredItems.map((item) => (
                   <Pressable
                     key={item.id}
                     onPress={() => openProduct(item)}
@@ -760,13 +798,19 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                       <VerifiedBadge />
                     </View>
                     <PriceCartPill price={item.price ?? '₹ —'} onAdd={() => addToCart(item)} />
-                    {item.freeShip ? <Text style={styles.freeShip}>Free shipping</Text> : null}
                   </Pressable>
                 ))}
               </ScrollView>
+              ) : (
+                <Text style={styles.categoryEmptyHint}>No featured picks in this category yet.</Text>
+              )}
 
+              {hotItems.length > 0 ? (
+              <>
               <View style={styles.sectionHead}>
-                <Text style={styles.sectionTitle}>Hot sales</Text>
+                <Text style={styles.sectionTitle}>
+                  {category === 'Gifts' ? 'Hot sales' : `${category} picks`}
+                </Text>
                 <View style={styles.dots}>
                   <View style={[styles.dot, styles.dotActive]} />
                   <View style={styles.dot} />
@@ -779,7 +823,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.cardsRow}
               >
-                {HOT_SALES.map((item) => (
+                {hotItems.map((item) => (
                   <Pressable
                     key={item.id}
                     onPress={() => openProduct(item)}
@@ -803,17 +847,22 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                       compact
                       onAdd={() => addToCart(item)}
                     />
-                    {item.freeShip ? <Text style={styles.freeShip}>Free shipping</Text> : null}
                   </Pressable>
                 ))}
               </ScrollView>
+              </>
+              ) : null}
 
+              {moreItems.length > 0 ? (
+              <>
               <View style={[styles.sectionHead, { marginTop: 22 }]}>
-                <Text style={styles.sectionTitle}>More gifts</Text>
+                <Text style={styles.sectionTitle}>
+                  {category === 'Gifts' ? 'More gifts' : `More ${category}`}
+                </Text>
               </View>
 
               <View style={styles.moreGrid}>
-                {MORE_GIFTS.map((item) => (
+                {moreItems.map((item) => (
                   <Pressable
                     key={item.id}
                     onPress={() => openProduct(item)}
@@ -837,11 +886,14 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                       compact
                       onAdd={() => addToCart(item)}
                     />
-                    {item.freeShip ? <Text style={styles.freeShip}>Free shipping</Text> : null}
                   </Pressable>
                 ))}
               </View>
+              </>
+              ) : null}
 
+              {recentItems.length > 0 ? (
+              <>
               <View style={[styles.sectionHead, { marginTop: 22 }]}>
                 <Text style={styles.sectionTitle}>Recently viewed</Text>
               </View>
@@ -851,7 +903,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.cardsRow}
               >
-                {RECENT.map((item) => (
+                {recentItems.map((item) => (
                   <Pressable
                     key={item.id}
                     onPress={() => openProduct(item)}
@@ -884,6 +936,8 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                   </Pressable>
                 ))}
               </ScrollView>
+              </>
+              ) : null}
             </ScrollView>
           ) : tab === 'categories' ? (
             <LinearGradient colors={['#F7F8FC', '#FFFFFF']} style={styles.categoriesPage}>
@@ -916,6 +970,9 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                       onPress={() => {
                         setCategory(item.title);
                         switchTab('home');
+                        setTimeout(() => {
+                          homeScrollRef.current?.scrollTo({ y: 0, animated: false });
+                        }, 40);
                       }}
                       style={({ pressed }) => [
                         styles.categoryHeroCard,
@@ -1526,6 +1583,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: '#FFFFFF',
     padding: 12,
+    marginBottom: 12,
     ...(Platform.OS === 'web'
       ? ({ boxShadow: '0 8px 22px rgba(0,0,0,0.06)' } as object)
       : {
@@ -1558,6 +1616,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     backgroundColor: '#FFFFFF',
     padding: 12,
+    marginBottom: 12,
     ...(Platform.OS === 'web'
       ? ({ boxShadow: '0 8px 22px rgba(0,0,0,0.06)' } as object)
       : {
@@ -1653,13 +1712,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    rowGap: 14,
+    rowGap: 0,
   },
   moreCard: {
     width: '48%',
     borderRadius: 18,
     backgroundColor: '#FFFFFF',
     padding: 10,
+    marginBottom: 12,
     ...(Platform.OS === 'web'
       ? ({ boxShadow: '0 8px 22px rgba(0,0,0,0.06)' } as object)
       : {
@@ -1736,17 +1796,18 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: TEXT,
   },
-  freeShip: {
-    marginTop: 6,
-    fontFamily: fonts.medium,
-    fontSize: 12,
-    color: GREEN,
+  categoryEmptyHint: {
+    fontFamily: fonts.regular,
+    fontSize: 14,
+    color: MUTED,
+    paddingVertical: 12,
   },
   recentCard: {
     width: 190,
     borderRadius: 20,
     padding: 14,
     minHeight: 190,
+    marginBottom: 12,
   },
   recentImg: {
     height: 120,
