@@ -101,6 +101,111 @@ const CATEGORY_CARDS: {
 
 const CATEGORY_SEARCH_PLACEHOLDER = 'What you gonna buy today?';
 
+type ExclusiveCard = {
+  id: string;
+  title: string;
+  image: ImageSourcePropType;
+  kind: 'category' | 'soon';
+  category?: string;
+};
+
+const EXCLUSIVE_CARDS: ExclusiveCard[] = [
+  {
+    id: 'coming',
+    title: 'Coming Soon',
+    image: {
+      uri: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=400&h=400&fit=crop&crop=center&q=80',
+    },
+    kind: 'soon',
+  },
+  {
+    id: 'mobiles',
+    title: 'Mobiles',
+    image: {
+      uri: 'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=400&h=400&fit=crop&crop=center&q=80',
+    },
+    kind: 'category',
+    category: 'Tech',
+  },
+  {
+    id: 'fashion',
+    title: 'Fashion',
+    image: {
+      uri: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&h=400&fit=crop&crop=center&q=80',
+    },
+    kind: 'category',
+    category: 'Fashion',
+  },
+  {
+    id: 'electronics',
+    title: 'Electronics',
+    image: {
+      uri: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop&crop=center&q=80',
+    },
+    kind: 'category',
+    category: 'Tech',
+  },
+  {
+    id: 'travel',
+    title: 'Travel',
+    image: {
+      uri: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=400&fit=crop&crop=center&q=80',
+    },
+    kind: 'soon',
+  },
+  {
+    id: 'deals',
+    title: 'Deals',
+    image: {
+      uri: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&h=400&fit=crop&crop=center&q=80',
+    },
+    kind: 'soon',
+  },
+  {
+    id: 'home',
+    title: 'Home',
+    image: {
+      uri: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=400&h=400&fit=crop&crop=center&q=80',
+    },
+    kind: 'category',
+    category: 'Gifts',
+  },
+  {
+    id: 'beauty',
+    title: 'Everyday Beauty',
+    image: {
+      uri: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&h=400&fit=crop&crop=center&q=80',
+    },
+    kind: 'category',
+    category: 'Fashion',
+  },
+  {
+    id: 'appliances',
+    title: 'Appliances',
+    image: {
+      uri: 'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=400&h=400&fit=crop&crop=center&q=80',
+    },
+    kind: 'soon',
+  },
+  {
+    id: 'furniture',
+    title: 'Furniture',
+    image: {
+      uri: 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=400&h=400&fit=crop&crop=center&q=80',
+    },
+    kind: 'soon',
+  },
+  {
+    id: 'kids',
+    title: 'Kids & Toys',
+    image: {
+      uri: 'https://images.unsplash.com/photo-1558060370-d644479cb6f7?w=400&h=400&fit=crop&crop=center&q=80',
+    },
+    kind: 'category',
+    category: 'Kids',
+  },
+];
+
 const SEARCH_PLACEHOLDER = 'Search Fashion, Tech, Gifts and much more';
 
 const SEARCH_SUGGESTIONS = [
@@ -240,9 +345,9 @@ const PROMO_BANNERS: {
   },
 ];
 
-type TabKey = 'home' | 'categories' | 'favorites' | 'profile';
+type TabKey = 'home' | 'categories' | 'exclusives' | 'profile';
 
-const TAB_ORDER: TabKey[] = ['home', 'categories', 'favorites', 'profile'];
+const TAB_ORDER: TabKey[] = ['home', 'categories', 'exclusives', 'profile'];
 
 const ALL_PRODUCTS: Product[] = [...FEATURED, ...HOT_SALES, ...MORE_GIFTS, ...RECENT];
 
@@ -484,8 +589,18 @@ function TabIcon({ name, active }: { name: TabKey; active: boolean }) {
       </Svg>
     );
   }
-  if (name === 'favorites') {
-    return <HeartIcon color={c} />;
+  if (name === 'exclusives') {
+    return (
+      <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
+        <Path
+          d="M12 3.5 13.9 9h5.6l-4.5 3.4 1.7 5.6L12 14.8 7.3 18l1.7-5.6L4.5 9h5.6L12 3.5Z"
+          stroke={c}
+          strokeWidth={1.7}
+          strokeLinejoin="round"
+          fill={active ? BLUE_SOFT : 'none'}
+        />
+      </Svg>
+    );
   }
   return (
     <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
@@ -770,6 +885,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CheckoutItem[]>([]);
+  const [exclusiveDetail, setExclusiveDetail] = useState<ExclusiveCard | null>(null);
   const inputRef = useRef<TextInputType>(null);
   const iconPulse = useRef(new Animated.Value(1)).current;
   const switchingRef = useRef(false);
@@ -817,9 +933,23 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
     setTabDirection(to > from ? 'forward' : 'back');
     switchingRef.current = true;
     setTab(next);
+    if (next !== 'exclusives') setExclusiveDetail(null);
     setTimeout(() => {
       switchingRef.current = false;
     }, 320);
+  };
+
+  const openExclusiveCard = (card: ExclusiveCard) => {
+    if (card.kind === 'category' && card.category) {
+      setCategory(card.category);
+      setExclusiveDetail(null);
+      switchTab('home');
+      setTimeout(() => {
+        homeScrollRef.current?.scrollTo({ y: 0, animated: false });
+      }, 40);
+      return;
+    }
+    setExclusiveDetail(card);
   };
 
   const toggleFavorite = (id: string) => {
@@ -1272,13 +1402,62 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                 </View>
               </ScrollView>
             </LinearGradient>
+          ) : tab === 'exclusives' ? (
+            exclusiveDetail ? (
+              <View style={styles.exclusiveDetail}>
+                <Pressable
+                  onPress={() => setExclusiveDetail(null)}
+                  style={styles.exclusiveBack}
+                  hitSlop={8}
+                >
+                  <Text style={styles.exclusiveBackText}>← Back</Text>
+                </Pressable>
+                <Image source={exclusiveDetail.image} style={styles.exclusiveDetailLogo} />
+                <Text style={styles.exclusiveDetailTitle}>{exclusiveDetail.title}</Text>
+                <Text style={styles.exclusiveDetailSub}>
+                  This exclusive section is coming soon. We’re curating the best picks for you.
+                </Text>
+                <Pressable
+                  onPress={() => setExclusiveDetail(null)}
+                  style={({ pressed }) => [styles.exclusiveSoonBtn, pressed && styles.pressed]}
+                >
+                  <Text style={styles.exclusiveSoonBtnText}>Browse exclusives</Text>
+                </Pressable>
+              </View>
+            ) : (
+              <ScrollView
+                style={styles.scroll}
+                contentContainerStyle={styles.exclusivesContent}
+                showsVerticalScrollIndicator={false}
+              >
+                <Text style={styles.exclusivesEyebrow}>GIVIT ONLY</Text>
+                <Text style={styles.exclusivesHeading}>Exclusives</Text>
+                <Text style={styles.exclusivesLead}>
+                  Jump into special stores, deals, and curated collections
+                </Text>
+                <View style={styles.exclusiveGrid}>
+                  {EXCLUSIVE_CARDS.map((card) => (
+                    <Pressable
+                      key={card.id}
+                      onPress={() => openExclusiveCard(card)}
+                      style={({ pressed }) => [styles.exclusiveCard, pressed && styles.pressed]}
+                    >
+                      <View style={styles.exclusiveLogoWrap}>
+                        <Image source={card.image} style={styles.exclusiveLogo} resizeMode="cover" />
+                      </View>
+                      <Text style={styles.exclusiveCardTitle} numberOfLines={2}>
+                        {card.title}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </ScrollView>
+            )
           ) : (
             <View style={styles.placeholderTab}>
-              <Text style={styles.placeholderTitle}>
-                {tab === 'favorites' ? 'Favorites' : 'Profile'}
-              </Text>
+              <Text style={styles.placeholderTitle}>Profile</Text>
               <Text style={styles.placeholderSub}>Coming next</Text>
-              {tab === 'profile' && onOpenProfile ? (
+              {onOpenProfile ? (
                 <Pressable onPress={onOpenProfile} style={styles.linkBtn}>
                   <Text style={styles.linkText}>Account settings</Text>
                 </Pressable>
@@ -1293,7 +1472,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
           [
             { key: 'home', label: 'Home' },
             { key: 'categories', label: 'Categories' },
-            { key: 'favorites', label: 'Favorites' },
+            { key: 'exclusives', label: 'Exclusives' },
             { key: 'profile', label: 'Profile' },
           ] as const
         ).map((item) => {
@@ -2162,6 +2341,113 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
     fontSize: 14,
     color: MUTED,
+  },
+  exclusivesContent: {
+    paddingHorizontal: 18,
+    paddingBottom: 28,
+    paddingTop: 8,
+  },
+  exclusivesEyebrow: {
+    fontFamily: fonts.semiBold,
+    fontSize: 11,
+    letterSpacing: 1.2,
+    color: BLUE,
+    marginBottom: 6,
+  },
+  exclusivesHeading: {
+    fontFamily: fonts.display,
+    fontSize: 30,
+    color: TEXT,
+    marginBottom: 6,
+  },
+  exclusivesLead: {
+    fontFamily: fonts.regular,
+    fontSize: 14,
+    color: MUTED,
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  exclusiveGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    columnGap: 8,
+    rowGap: 10,
+  },
+  exclusiveCard: {
+    width: '23%',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  exclusiveLogoWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginBottom: 6,
+    backgroundColor: '#F4F4F6',
+  },
+  exclusiveLogo: {
+    width: '100%',
+    height: '100%',
+  },
+  exclusiveCardTitle: {
+    fontFamily: fonts.medium,
+    fontSize: 11,
+    color: TEXT,
+    textAlign: 'center',
+    lineHeight: 14,
+  },
+  exclusiveDetail: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 28,
+  },
+  exclusiveBack: {
+    position: 'absolute',
+    top: 12,
+    left: 18,
+  },
+  exclusiveBackText: {
+    fontFamily: fonts.semiBold,
+    fontSize: 15,
+    color: BLUE,
+  },
+  exclusiveDetailLogo: {
+    width: 96,
+    height: 96,
+    borderRadius: 24,
+    marginBottom: 18,
+    backgroundColor: FIELD,
+  },
+  exclusiveDetailTitle: {
+    fontFamily: fonts.display,
+    fontSize: 28,
+    color: TEXT,
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  exclusiveDetailSub: {
+    fontFamily: fonts.regular,
+    fontSize: 14,
+    color: MUTED,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 22,
+  },
+  exclusiveSoonBtn: {
+    height: 46,
+    paddingHorizontal: 22,
+    borderRadius: 14,
+    backgroundColor: BLUE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  exclusiveSoonBtnText: {
+    fontFamily: fonts.semiBold,
+    fontSize: 14,
+    color: '#FFFFFF',
   },
   linkBtn: { marginTop: 12 },
   linkText: {
