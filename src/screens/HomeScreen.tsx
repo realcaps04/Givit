@@ -400,11 +400,11 @@ function VerifiedBadge() {
   const [open, setOpen] = useState(false);
 
   return (
-    <>
+    <View style={styles.verifiedWrap}>
       <Pressable
         onPress={(e) => {
           stopCardNav(e);
-          setOpen(true);
+          setOpen((v) => !v);
         }}
         hitSlop={8}
         accessibilityRole="button"
@@ -414,27 +414,18 @@ function VerifiedBadge() {
         <VerifiedIcon />
       </Pressable>
 
-      <Modal
-        visible={open}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setOpen(false)}
-        statusBarTranslucent
-      >
-        <Pressable style={styles.verifiedBackdrop} onPress={() => setOpen(false)}>
-          <Pressable
-            style={styles.verifiedPopup}
-            onPress={(e) => stopCardNav(e)}
-          >
-            <VerifiedIcon size={22} />
-            <View style={styles.verifiedPopupCopy}>
-              <Text style={styles.verifiedPopupTitle}>Givit verified</Text>
-              <Text style={styles.verifiedPopupSub}>Authenticated quality gift</Text>
-            </View>
-          </Pressable>
+      {open ? (
+        <Pressable
+          onPress={(e) => {
+            stopCardNav(e);
+            setOpen(false);
+          }}
+          style={styles.verifiedTip}
+        >
+          <Text style={styles.verifiedTipText}>Givit verified</Text>
         </Pressable>
-      </Modal>
-    </>
+      ) : null}
+    </View>
   );
 }
 
@@ -730,9 +721,12 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                     <View style={styles.featuredBadge}>
                       <Text style={styles.featuredBadgeText}>Featured</Text>
                     </View>
-                    <Text style={styles.saleTitle} numberOfLines={2}>
-                      {item.title}
-                    </Text>
+                    <View style={styles.cardTitleRow}>
+                      <Text style={styles.saleTitle} numberOfLines={1} ellipsizeMode="tail">
+                        {item.title}
+                      </Text>
+                      <VerifiedBadge />
+                    </View>
                     <PriceCartPill price={item.price ?? '₹ —'} onAdd={() => addToCart(item.title)} />
                     {item.freeShip ? <Text style={styles.freeShip}>Free shipping</Text> : null}
                   </Pressable>
@@ -766,9 +760,12 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                         onPress={() => toggleFavorite(item.id)}
                       />
                     </View>
-                    <Text style={styles.saleTitle} numberOfLines={2}>
-                      {item.title}
-                    </Text>
+                    <View style={styles.cardTitleRow}>
+                      <Text style={styles.saleTitle} numberOfLines={1} ellipsizeMode="tail">
+                        {item.title}
+                      </Text>
+                      <VerifiedBadge />
+                    </View>
                     <PriceCartPill
                       price={item.price ?? '₹ —'}
                       compact
@@ -797,9 +794,12 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                         onPress={() => toggleFavorite(item.id)}
                       />
                     </View>
-                    <Text style={styles.saleTitle} numberOfLines={2}>
-                      {item.title}
-                    </Text>
+                    <View style={styles.cardTitleRow}>
+                      <Text style={styles.saleTitle} numberOfLines={1} ellipsizeMode="tail">
+                        {item.title}
+                      </Text>
+                      <VerifiedBadge />
+                    </View>
                     <PriceCartPill
                       price={item.price ?? '₹ —'}
                       compact
@@ -836,7 +836,12 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                         onPress={() => toggleFavorite(item.id)}
                       />
                     </View>
-                    <Text style={styles.recentTitle}>{item.title}</Text>
+                    <View style={styles.cardTitleRow}>
+                      <Text style={styles.recentTitle} numberOfLines={1} ellipsizeMode="tail">
+                        {item.title}
+                      </Text>
+                      <VerifiedBadge />
+                    </View>
                     <PriceCartPill
                       price={
                         ALL_PRODUCTS.find((p) => p.title === item.title && p.price)?.price ?? '₹ —'
@@ -1573,6 +1578,53 @@ const styles = StyleSheet.create({
           elevation: 2,
         }),
   },
+  verifiedBtn: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    marginTop: 2,
+  },
+  verifiedWrap: {
+    position: 'relative',
+    zIndex: 5,
+    flexShrink: 0,
+  },
+  verifiedTip: {
+    position: 'absolute',
+    right: 0,
+    top: 26,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#E4E4EA',
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 4px 12px rgba(20, 30, 60, 0.08)' } as object)
+      : {
+          shadowColor: '#14203C',
+          shadowOpacity: 0.08,
+          shadowRadius: 8,
+          shadowOffset: { width: 0, height: 3 },
+          elevation: 3,
+        }),
+  },
+  verifiedTipText: {
+    fontFamily: fonts.medium,
+    fontSize: 11,
+    color: BLUE,
+  },
+  cardTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+    marginTop: 8,
+    overflow: 'visible',
+    zIndex: 4,
+  },
   pressed: {
     opacity: 0.85,
   },
@@ -1656,7 +1708,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   saleTitle: {
-    marginTop: 2,
+    flex: 1,
+    minWidth: 0,
+    marginTop: 0,
     fontFamily: fonts.medium,
     fontSize: 13,
     color: TEXT,
@@ -1678,7 +1732,9 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   recentTitle: {
-    marginTop: 12,
+    flex: 1,
+    minWidth: 0,
+    marginTop: 0,
     fontFamily: fonts.semiBold,
     fontSize: 15,
     color: TEXT,
