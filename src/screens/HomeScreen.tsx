@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Animated,
@@ -14,6 +14,8 @@ import {
   TextInput,
   View,
   type ImageSourcePropType,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   type TextInput as TextInputType,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -164,6 +166,80 @@ const RECENT: Product[] = [
 
 const BANNER_IMG = require('../../assets/products/banner.jpg');
 
+const PROMO_BANNERS: {
+  id: string;
+  eyebrow: string;
+  title: string;
+  pill: string;
+  foot: string;
+  image: ImageSourcePropType;
+  overlay: string;
+}[] = [
+  {
+    id: 'b1',
+    eyebrow: 'GIVIT WEEK',
+    title: '40% OFF\ncelebration gifts',
+    pill: 'FREE SHIPPING',
+    foot: 'Valid this week · Selected gift sets',
+    image: BANNER_IMG,
+    overlay: 'rgba(0, 40, 140, 0.55)',
+  },
+  {
+    id: 'b2',
+    eyebrow: 'TECH DROP',
+    title: 'Smart gifts\nup to 35% off',
+    pill: 'NEW ARRIVALS',
+    foot: 'Watches, audio & more',
+    image: require('../../assets/products/r01.jpg'),
+    overlay: 'rgba(20, 30, 70, 0.58)',
+  },
+  {
+    id: 'b3',
+    eyebrow: 'FOR HER',
+    title: 'Beauty kits\nfrom ₹1,899',
+    pill: 'LIMITED',
+    foot: 'Curated self-care sets',
+    image: require('../../assets/products/p07.jpg'),
+    overlay: 'rgba(90, 30, 70, 0.52)',
+  },
+  {
+    id: 'b4',
+    eyebrow: 'GOURMET',
+    title: 'Treat towers\n25% off',
+    pill: 'TASTE MORE',
+    foot: 'Chocolates, cakes & hampers',
+    image: require('../../assets/products/p08.jpg'),
+    overlay: 'rgba(80, 45, 20, 0.55)',
+  },
+  {
+    id: 'b5',
+    eyebrow: 'LUXE BOXES',
+    title: 'Premium wraps\nstarting ₹999',
+    pill: 'EDITOR PICKS',
+    foot: 'Gift-ready in every size',
+    image: require('../../assets/products/p06.jpg'),
+    overlay: 'rgba(25, 25, 35, 0.58)',
+  },
+  {
+    id: 'b6',
+    eyebrow: 'STYLE WEEK',
+    title: 'Fashion gifts\nworth gifting',
+    pill: 'SHOP STYLE',
+    foot: 'Essentials they’ll actually use',
+    image: require('../../assets/products/p09.jpg'),
+    overlay: 'rgba(25, 55, 45, 0.55)',
+  },
+  {
+    id: 'b7',
+    eyebrow: 'WEEKEND',
+    title: 'Surprise stacks\nready to ship',
+    pill: 'EXPRESS',
+    foot: 'Same-week delivery on select sets',
+    image: require('../../assets/products/p01.jpg'),
+    overlay: 'rgba(40, 25, 90, 0.55)',
+  },
+];
+
 type TabKey = 'home' | 'categories' | 'favorites' | 'profile';
 
 const TAB_ORDER: TabKey[] = ['home', 'categories', 'favorites', 'profile'];
@@ -288,6 +364,83 @@ function ChevronRightIcon() {
   return (
     <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
       <Path d="M9 6l6 6-6 6" stroke={BLUE} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+function CategoryChipIcon({ name, active }: { name: string; active: boolean }) {
+  const c = active ? BLUE : MUTED;
+  if (name === 'Gifts') {
+    return (
+      <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+        <Path d="M4 10h16v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-9Z" stroke={c} strokeWidth={1.7} />
+        <Path d="M3 7h18v3H3V7Z" stroke={c} strokeWidth={1.7} strokeLinejoin="round" />
+        <Path d="M12 7v14" stroke={c} strokeWidth={1.7} strokeLinecap="round" />
+        <Path d="M12 7c-2.2-3.2-5.5-2.4-5.5-.6C6.5 8.2 9 9 12 10" stroke={c} strokeWidth={1.7} strokeLinecap="round" />
+        <Path d="M12 7c2.2-3.2 5.5-2.4 5.5-.6C17.5 8.2 15 9 12 10" stroke={c} strokeWidth={1.7} strokeLinecap="round" />
+      </Svg>
+    );
+  }
+  if (name === 'Flowers') {
+    return (
+      <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+        <Circle cx="12" cy="10" r="2.2" fill={c} />
+        <Path d="M12 8c0-2.4 1.6-4 3.2-4-0.2 2-1.4 3.4-3.2 4Z" stroke={c} strokeWidth={1.5} strokeLinejoin="round" />
+        <Path d="M12 8c0-2.4-1.6-4-3.2-4 0.2 2 1.4 3.4 3.2 4Z" stroke={c} strokeWidth={1.5} strokeLinejoin="round" />
+        <Path d="M14 10c2.2-.8 4 .4 4.2 2.2-2 .2-3.4-.8-4.2-2.2Z" stroke={c} strokeWidth={1.5} strokeLinejoin="round" />
+        <Path d="M10 10c-2.2-.8-4 .4-4.2 2.2 2 .2 3.4-.8 4.2-2.2Z" stroke={c} strokeWidth={1.5} strokeLinejoin="round" />
+        <Path d="M12 12.2V19" stroke={c} strokeWidth={1.7} strokeLinecap="round" />
+        <Path d="M12 16c-1.6 1-3 1.2-4 .8" stroke={c} strokeWidth={1.5} strokeLinecap="round" />
+      </Svg>
+    );
+  }
+  if (name === 'Plants') {
+    return (
+      <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+        <Path d="M12 20V11" stroke={c} strokeWidth={1.7} strokeLinecap="round" />
+        <Path d="M12 12c-3.2-1-5.5.2-6.5 2.8 2.8.4 5-.6 6.5-2.8Z" stroke={c} strokeWidth={1.6} strokeLinejoin="round" />
+        <Path d="M12 10c3-2.2 5.8-1.6 7 .6-2.6 1.2-5 .6-7-.6Z" stroke={c} strokeWidth={1.6} strokeLinejoin="round" />
+        <Path d="M9 20h6" stroke={c} strokeWidth={1.7} strokeLinecap="round" />
+      </Svg>
+    );
+  }
+  if (name === 'Fashion') {
+    return (
+      <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+        <Path
+          d="M8 5.5 12 8l4-2.5 2.5 2L16 10v10H8V10L5.5 7.5 8 5.5Z"
+          stroke={c}
+          strokeWidth={1.7}
+          strokeLinejoin="round"
+        />
+        <Path d="M12 8v12" stroke={c} strokeWidth={1.5} strokeLinecap="round" />
+      </Svg>
+    );
+  }
+  if (name === 'Tech') {
+    return (
+      <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+        <Rect x="6" y="3.5" width="12" height="17" rx="2.5" stroke={c} strokeWidth={1.7} />
+        <Path d="M10 17.5h4" stroke={c} strokeWidth={1.7} strokeLinecap="round" />
+      </Svg>
+    );
+  }
+  if (name === 'Gourmet') {
+    return (
+      <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+        <Path d="M8 3.5v7a2.5 2.5 0 0 0 5 0v-7" stroke={c} strokeWidth={1.7} strokeLinecap="round" />
+        <Path d="M10.5 3.5v6" stroke={c} strokeWidth={1.5} strokeLinecap="round" />
+        <Path d="M10.5 13.5V20" stroke={c} strokeWidth={1.7} strokeLinecap="round" />
+        <Path d="M16 4v5.5c0 1.4.8 2.2 2 2.5V20" stroke={c} strokeWidth={1.7} strokeLinecap="round" />
+      </Svg>
+    );
+  }
+  // Kids
+  return (
+    <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
+      <Circle cx="12" cy="9" r="3.2" stroke={c} strokeWidth={1.7} />
+      <Path d="M7 19c.6-2.8 2.4-4.2 5-4.2s4.4 1.4 5 4.2" stroke={c} strokeWidth={1.7} strokeLinecap="round" />
+      <Path d="M8.5 7.2 7 5.5M15.5 7.2 17 5.5" stroke={c} strokeWidth={1.6} strokeLinecap="round" />
     </Svg>
   );
 }
@@ -477,6 +630,131 @@ function PriceCartPill({
       >
         <CartMiniIcon />
       </Pressable>
+    </View>
+  );
+}
+
+function PromoBannerCarousel() {
+  const [width, setWidth] = useState(0);
+  const scrollX = useRef(new Animated.Value(0)).current;
+  const [active, setActive] = useState(0);
+  const listRef = useRef<ScrollView>(null);
+  const activeRef = useRef(0);
+  const draggingRef = useRef(false);
+  const autoPausedUntil = useRef(0);
+
+  useEffect(() => {
+    activeRef.current = active;
+  }, [active]);
+
+  useEffect(() => {
+    if (width <= 0) return;
+
+    const tick = () => {
+      if (draggingRef.current || Date.now() < autoPausedUntil.current) return;
+      const next = (activeRef.current + 1) % PROMO_BANNERS.length;
+      listRef.current?.scrollTo({ x: next * width, animated: true });
+      activeRef.current = next;
+      setActive(next);
+    };
+
+    const id = setInterval(tick, 3800);
+    return () => clearInterval(id);
+  }, [width]);
+
+  const pauseAuto = () => {
+    draggingRef.current = true;
+    autoPausedUntil.current = Date.now() + 5000;
+  };
+
+  const resumeAuto = (e?: NativeSyntheticEvent<NativeScrollEvent>) => {
+    draggingRef.current = false;
+    autoPausedUntil.current = Date.now() + 4500;
+    if (e && width > 0) {
+      const i = Math.round(e.nativeEvent.contentOffset.x / width);
+      const clamped = Math.max(0, Math.min(PROMO_BANNERS.length - 1, i));
+      activeRef.current = clamped;
+      setActive(clamped);
+    }
+  };
+
+  return (
+    <View
+      style={styles.bannerCarousel}
+      onLayout={(e) => {
+        const next = Math.round(e.nativeEvent.layout.width);
+        if (next > 0 && next !== width) setWidth(next);
+      }}
+    >
+      {width > 0 ? (
+        <Animated.ScrollView
+          ref={listRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          decelerationRate="fast"
+          snapToInterval={width}
+          snapToAlignment="start"
+          disableIntervalMomentum
+          bounces={false}
+          overScrollMode="never"
+          scrollEventThrottle={16}
+          onScrollBeginDrag={pauseAuto}
+          onScrollEndDrag={resumeAuto}
+          onMomentumScrollEnd={resumeAuto}
+          onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
+            useNativeDriver: false,
+          })}
+        >
+          {PROMO_BANNERS.map((banner, index) => {
+            const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
+            const scale = scrollX.interpolate({
+              inputRange,
+              outputRange: [0.94, 1, 0.94],
+              extrapolate: 'clamp',
+            });
+            const opacity = scrollX.interpolate({
+              inputRange,
+              outputRange: [0.72, 1, 0.72],
+              extrapolate: 'clamp',
+            });
+
+            return (
+              <Animated.View
+                key={banner.id}
+                style={[styles.bannerSlide, { width, opacity, transform: [{ scale }] }]}
+              >
+                <ImageBackground
+                  source={banner.image}
+                  style={styles.banner}
+                  imageStyle={styles.bannerImage}
+                >
+                  <View style={[styles.bannerOverlay, { backgroundColor: banner.overlay }]} />
+                  <View style={styles.bannerCopy}>
+                    <Text style={styles.bannerEyebrow}>{banner.eyebrow}</Text>
+                    <Text style={styles.bannerTitle}>{banner.title}</Text>
+                    <View style={styles.bannerPill}>
+                      <Text style={styles.bannerPillText}>{banner.pill}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.bannerFoot}>{banner.foot}</Text>
+                </ImageBackground>
+              </Animated.View>
+            );
+          })}
+        </Animated.ScrollView>
+      ) : (
+        <View style={[styles.banner, styles.bannerPlaceholder]} />
+      )}
+
+      <View style={styles.bannerDots}>
+        {PROMO_BANNERS.map((banner, i) => (
+          <View
+            key={banner.id}
+            style={[styles.bannerDot, i === active && styles.bannerDotActive]}
+          />
+        ))}
+      </View>
     </View>
   );
 }
@@ -724,17 +1002,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                 </View>
               </View>
 
-              <ImageBackground source={BANNER_IMG} style={styles.banner} imageStyle={styles.bannerImage}>
-                <View style={styles.bannerOverlay} />
-                <View style={styles.bannerCopy}>
-                  <Text style={styles.bannerEyebrow}>GIVIT WEEK</Text>
-                  <Text style={styles.bannerTitle}>40% OFF{'\n'}celebration gifts</Text>
-                  <View style={styles.bannerPill}>
-                    <Text style={styles.bannerPillText}>FREE SHIPPING</Text>
-                  </View>
-                </View>
-                <Text style={styles.bannerFoot}>Valid this week · Selected gift sets</Text>
-              </ImageBackground>
+              <PromoBannerCarousel />
 
               <ScrollView
                 horizontal
@@ -752,6 +1020,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                       }}
                       style={[styles.catChip, active && styles.catChipActive]}
                     >
+                      <CategoryChipIcon name={c} active={active} />
                       <Text style={[styles.catLabel, active && styles.catLabelActive]}>{c}</Text>
                     </Pressable>
                   );
@@ -1483,11 +1752,21 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: BLUE,
   },
+  bannerCarousel: {
+    marginBottom: 16,
+  },
+  bannerSlide: {
+    justifyContent: 'center',
+  },
+  bannerPlaceholder: {
+    backgroundColor: FIELD,
+    marginBottom: 0,
+  },
   banner: {
     borderRadius: 22,
     minHeight: 168,
     overflow: 'hidden',
-    marginBottom: 16,
+    marginBottom: 0,
     padding: 18,
     justifyContent: 'space-between',
   },
@@ -1532,13 +1811,33 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.85)',
     zIndex: 1,
   },
+  bannerDots: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 10,
+  },
+  bannerDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#D8D8DE',
+  },
+  bannerDotActive: {
+    width: 16,
+    backgroundColor: BLUE,
+  },
   cats: {
     gap: 8,
     paddingBottom: 8,
   },
   catChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
     borderRadius: 18,
     borderWidth: 1,
     borderColor: '#E4E4EA',
