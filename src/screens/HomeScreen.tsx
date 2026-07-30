@@ -1498,7 +1498,7 @@ export function HomeScreen({ onOpenProfile }: HomeScreenProps) {
                           </View>
                         </View>
                         <View style={styles.categoryHeroArt}>
-                          <CategoryIllustration id={item.id} size={index % 2 === 0 ? 148 : 138} />
+                          <CategoryIllustration id={item.id} size={120} />
                         </View>
                       </LinearGradient>
                     </Pressable>
@@ -1933,10 +1933,12 @@ const styles = StyleSheet.create({
     color: BLUE,
   },
   categoryHeroArt: {
-    width: 132,
+    width: 128,
+    height: 118,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1,
+    marginRight: 6,
   },
   searchModal: {
     flex: 1,
