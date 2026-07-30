@@ -51,8 +51,22 @@ type Voucher = {
 const STEPS = ['Cart', 'Shipping', 'Payment', 'Review'] as const;
 
 const CARDS = [
-  { id: 'c1', brand: 'VISA', last4: '1921', expiry: '07/25', colors: ['#5B8CFF', '#004CFF'] as const },
-  { id: 'c2', brand: 'VISA', last4: '5632', expiry: '07/25', colors: ['#A78BFA', '#6366F1'] as const },
+  {
+    id: 'c1',
+    brand: 'visa' as const,
+    last4: '1921',
+    expiry: '07/28',
+    holder: 'ALEX MORGAN',
+    colors: ['#1A1F71', '#0B4F9C', '#2A6FDB'] as const,
+  },
+  {
+    id: 'c2',
+    brand: 'mastercard' as const,
+    last4: '5632',
+    expiry: '11/27',
+    holder: 'ALEX MORGAN',
+    colors: ['#1C1C1E', '#2C2C2E', '#3A3A3C'] as const,
+  },
 ];
 
 const VOUCHERS: Voucher[] = [
@@ -71,6 +85,34 @@ const VOUCHERS: Voucher[] = [
     validUntil: 'Valid Until 24 Nov 2026',
     discountPercent: 15,
     icon: 'gift',
+  },
+];
+
+type SavedAddress = {
+  id: string;
+  label: string;
+  name: string;
+  phone: string;
+  line1: string;
+  line2: string;
+};
+
+const INITIAL_ADDRESSES: SavedAddress[] = [
+  {
+    id: 'a1',
+    label: 'Home',
+    name: 'Alex Morgan',
+    phone: '+91 98765 43210',
+    line1: '12 Palm Grove, Bandra West',
+    line2: 'Mumbai, 400050',
+  },
+  {
+    id: 'a2',
+    label: 'Office',
+    name: 'Alex Morgan',
+    phone: '+91 98765 43210',
+    line1: 'WeWork One Horizon, Goregaon East',
+    line2: 'Mumbai, 400063',
   },
 ];
 
@@ -152,6 +194,110 @@ function GiftBoxIcon() {
   );
 }
 
+function ChipIcon() {
+  return (
+    <Svg width={34} height={26} viewBox="0 0 34 26" fill="none">
+      <Rect x="1" y="1" width="32" height="24" rx="4" fill="#E8C872" stroke="#C9A84A" strokeWidth={1} />
+      <Path d="M1 9h32M1 17h32M12 1v24M22 1v24" stroke="#C9A84A" strokeWidth={0.9} opacity={0.7} />
+    </Svg>
+  );
+}
+
+function ContactlessIcon() {
+  return (
+    <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+      <Path d="M8 8c2.2 2.2 2.2 5.8 0 8" stroke="rgba(255,255,255,0.85)" strokeWidth={1.6} strokeLinecap="round" />
+      <Path d="M11 5.5c3.6 3.6 3.6 9.4 0 13" stroke="rgba(255,255,255,0.7)" strokeWidth={1.6} strokeLinecap="round" />
+      <Path d="M14 3c5 5 5 13 0 18" stroke="rgba(255,255,255,0.5)" strokeWidth={1.6} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+function VisaLogo({ light = true }: { light?: boolean }) {
+  const fill = light ? '#FFFFFF' : '#1A1F71';
+  return (
+    <Svg width={46} height={16} viewBox="0 0 48 16" fill="none">
+      <Path
+        d="M20.4 1.2h-3.4l-2.1 13.2h3.4L20.4 1.2Zm11.3 8.5 1.8-4.9.9 4.9h-2.7Zm3.5 4.7h3.1L35.6 1.2h-2.9c-.6 0-1.1.4-1.3.9l-4.6 11.1h3.5l.6-1.8h4.3l.4 1.8ZM16.8 1.2l-3.3 8.8-.4-1.8c-.6-2-2.5-4.2-4.6-5.2l3 11.4h3.5L20.2 1.2h-3.4ZM8.1 1.2H2.8L2.7 1.5c4.1 1 6.9 3.5 8 6.5L9.4 2.1c-.2-.6-.7-.9-1.3-.9Z"
+        fill={fill}
+      />
+    </Svg>
+  );
+}
+
+function MastercardLogo() {
+  return (
+    <Svg width={38} height={24} viewBox="0 0 38 24" fill="none">
+      <Circle cx="14" cy="12" r="9" fill="#EB001B" />
+      <Circle cx="24" cy="12" r="9" fill="#F79E1B" />
+      <Path
+        d="M19 5.4a9 9 0 0 1 0 13.2 9 9 0 0 1 0-13.2Z"
+        fill="#FF5F00"
+      />
+    </Svg>
+  );
+}
+
+function GooglePayLogo() {
+  return (
+    <Svg width={52} height={22} viewBox="0 0 52 22" fill="none">
+      <Path d="M24.2 16.8V5.2h2.1l3.4 8.6 3.4-8.6h2.1v11.6h-1.6V7.6l-3.4 8.4h-1.2l-3.4-8.4v9.2h-1.4Z" fill="#5F6368" />
+      <Path d="M37.2 17c-2.5 0-4.3-1.8-4.3-4.3s1.8-4.3 4.3-4.3c1.2 0 2.2.4 3 1.2l-1.1 1.1a2.5 2.5 0 0 0-1.9-.8c-1.6 0-2.8 1.3-2.8 2.8s1.2 2.8 2.8 2.8c1 0 1.7-.4 2.1-1h-2.1v-1.5h3.7v.8c0 2.3-1.5 3.2-3.7 3.2Z" fill="#5F6368" />
+      <Path d="M43.4 17c-2.3 0-4.1-1.8-4.1-4.3s1.8-4.3 4.1-4.3c2.3 0 4.1 1.8 4.1 4.3s-1.8 4.3-4.1 4.3Zm0-1.5c1.5 0 2.6-1.2 2.6-2.8s-1.1-2.8-2.6-2.8-2.6 1.2-2.6 2.8 1.1 2.8 2.6 2.8Z" fill="#5F6368" />
+      <Path d="M10.6 10.9v2.4h3.8c-.2 1-.7 1.8-1.4 2.3v1.9h2.3c1.3-1.2 2.1-3 2.1-5.2 0-.4 0-.8-.1-1.1H10.6v-.3Z" fill="#4285F4" />
+      <Path d="M10.6 18.8c1.9 0 3.5-.6 4.7-1.7l-2.3-1.8c-.6.4-1.5.7-2.4.7-1.9 0-3.4-1.2-4-2.9H4.2v1.9c1.2 2.3 3.6 3.8 6.4 3.8Z" fill="#34A853" />
+      <Path d="M6.6 13.1c-.2-.4-.2-.9-.2-1.4s.1-1 .2-1.4V8.4H4.2C3.7 9.4 3.5 10.5 3.5 11.7s.2 2.3.7 3.3l2.4-1.9Z" fill="#FBBC05" />
+      <Path d="M10.6 6.9c1 0 2 .4 2.7 1.1l2-2C14.1 4.8 12.5 4 10.6 4 7.8 4 5.4 5.5 4.2 7.8l2.4 1.9c.6-1.7 2.1-2.8 4-2.8Z" fill="#EA4335" />
+    </Svg>
+  );
+}
+
+function ApplePayLogo() {
+  return (
+    <Svg width={48} height={20} viewBox="0 0 48 20" fill="none">
+      <Path
+        d="M8.4 3.6c.5-.6 1.1-1.1 1.1-1.9-.1-.1-.8.1-1.4.7-.5.5-1 1.2-.9 1.9.1 0 .9-.1 1.2-.7ZM9.5 5.3c-1.2 0-2.1.7-2.7.7-.6 0-1.4-.6-2.4-.6-1.2 0-2.4.7-3 1.8-1.3 2.3-.3 5.6 1 7.5.6.9 1.3 1.9 2.3 1.9.9 0 1.2-.6 2.3-.6 1.1 0 1.4.6 2.4.6 1 0 1.6-.9 2.2-1.8.7-1 1-2 1-2.1-.1 0-1.9-.7-1.9-2.9 0-1.8 1.5-2.7 1.5-2.7-.9-1.3-2.2-1.4-2.7-1.4Z"
+        fill="#000000"
+      />
+      <Path
+        d="M16.2 16.6V5.8h2.5c2.2 0 3.7 1.4 3.7 3.4 0 2.1-1.6 3.5-3.8 3.5h-1.1v3.9h-1.3Zm1.3-5.1h1c1.4 0 2.4-.8 2.4-2.2s-1-2.2-2.4-2.2h-1v4.4ZM24 16.8c-1.9 0-3.2-1.3-3.2-3.2s1.3-3.2 3.2-3.2c.9 0 1.6.3 2.1.8l-.8.8c-.3-.3-.8-.6-1.3-.6-1.1 0-1.9.8-1.9 2.1s.8 2.1 1.9 2.1c.6 0 1-.2 1.4-.6l.8.8c-.5.6-1.3 1-2.2 1ZM29.3 16.8c-1.8 0-3-1.2-3-3.2s1.2-3.2 3.1-3.2 3.1 1.3 3.1 3.4v.3h-4.8c.1 1.2.9 2 2.1 2 .7 0 1.3-.2 1.8-.7l.7.7c-.6.6-1.4.9-2.4.9Zm-.1-5.2c-1 0-1.7.6-1.9 1.6h3.6c-.1-1-.8-1.6-1.7-1.6ZM34.2 16.6v-5.4h-.9v-1.1h.9V8.4l1.3-.2v1.9h1.5v1.1h-1.5v5.4h-1.3ZM38.4 16.8c-1.1 0-1.8-.6-1.8-1.5 0-1.1.9-1.6 2.4-1.7l1.4-.1v-.4c0-.7-.4-1.1-1.2-1.1-.6 0-1.1.2-1.5.5l-.6-.8c.5-.4 1.3-.7 2.2-.7 1.5 0 2.4.8 2.4 2.2v4.4h-1.2v-.8c-.4.5-1.1.9-2.1.9Zm.3-1.1c.8 0 1.4-.5 1.4-1.2v-.5l-1.2.1c-.8.1-1.2.3-1.2.8 0 .5.4.8 1 .8ZM43.5 16.8c-.9 0-1.5-.4-1.8-1.1l1.1-.5c.1.4.5.6.9.6.5 0 .8-.3.8-.6 0-.3-.2-.5-.8-.7l-.8-.3c-.9-.3-1.4-.8-1.4-1.6 0-1 .8-1.7 1.9-1.7.8 0 1.4.3 1.7 1l-1 .5c-.2-.3-.5-.5-.8-.5-.4 0-.7.2-.7.5s.2.5.8.7l.8.3c.9.3 1.4.8 1.4 1.7 0 1.1-.8 1.8-2.1 1.8Z"
+        fill="#000000"
+      />
+    </Svg>
+  );
+}
+
+function PayPalLogo() {
+  return (
+    <Svg width={56} height={18} viewBox="0 0 56 18" fill="none">
+      <Path
+        d="M20.6 1.2h-5.4c-.4 0-.7.3-.8.7L12.2 16c0 .3.2.5.5.5h2.4c.4 0 .7-.3.8-.7l.6-3.7c0-.4.4-.7.8-.7h1.8c3.7 0 5.9-1.8 6.4-5.4.1-.7.1-1.3 0-1.8C25 2.5 23.2 1.2 20.6 1.2Zm1 5.1c-.3 2-1.9 2-3.4 2h-.9l.6-3.8c0-.2.2-.4.4-.4h.5c1.1 0 2.1 0 2.6.6.3.3.4.8.2 1.6Z"
+        fill="#003087"
+      />
+      <Path
+        d="M8.4 1.2H3c-.4 0-.7.3-.8.7L0 16c0 .3.2.5.5.5h2.8c.4 0 .7-.3.8-.7l.6-4c0-.4.4-.7.8-.7h1.8c3.7 0 5.9-1.8 6.4-5.4.1-.7.1-1.3 0-1.8C12.8 2.5 11 1.2 8.4 1.2Zm1 5.1c-.3 2-1.9 2-3.4 2H5.1l.6-3.8c0-.2.2-.4.4-.4h.5c1.1 0 2.1 0 2.6.6.3.3.4.8.2 1.6Z"
+        fill="#001C64"
+      />
+      <Path
+        d="M41.8 6.3h-2.5c-.2 0-.4.2-.4.4l-.1.6-.2-.3c-.5-.7-1.5-1-2.6-1-2.4 0-4.5 1.9-4.5 4.6 0 2.4 1.7 4.3 4.1 4.3 1 0 1.9-.3 2.6-1l-.1.3c0 .3.2.5.5.5h2.2c.4 0 .7-.3.8-.7l1.3-8.2c0-.3-.2-.5-.5-.5h.1Zm-3.5 4.4c0 1.3-1 2.3-2.2 2.3-.9 0-1.9-.7-1.9-2.3 0-1.2 1-2.3 2.2-2.3 1 0 1.9.7 1.9 2.3Z"
+        fill="#003087"
+      />
+      <Path
+        d="M49.8 10.3c-.4-.2-.7-.4-.7-.6 0-.4.4-.7 1.1-.7.6 0 1.1.1 1.6.4.1 0 .2 0 .2-.1l.5-1.6c0-.1 0-.2-.1-.2-.6-.3-1.4-.5-2.3-.5-2.1 0-3.5 1.1-3.5 2.7 0 1.2.9 1.9 2.2 2.4.5.2.9.4.9.7 0 .4-.5.8-1.2.8-.8 0-1.5-.2-2.1-.5-.1 0-.2 0-.2.1l-.5 1.6c0 .1 0 .2.1.2.7.3 1.7.5 2.6.5 2.3 0 3.7-1.1 3.7-2.8 0-1.2-.9-1.9-2.4-2.4Z"
+        fill="#003087"
+      />
+      <Path
+        d="M54.6 6.3h-2.5c-.3 0-.5.2-.6.4l-3.4 8.2c0 .3.2.5.5.5h2.4c.3 0 .5-.2.5-.3l.9-2.6h2.9l.5 2.4c0 .3.3.5.6.5h2.1c.3 0 .5-.3.4-.6L55.2 6.7c0-.2-.3-.4-.6-.4Zm-1.4 5.3.9-2.8.5 2.8h-1.4Z"
+        fill="#001C64"
+      />
+      <Path
+        d="M32.2 6.3h-2.5c-.2 0-.5.1-.6.4l-1.7 2.6-1.7-2.5c-.1-.2-.3-.4-.6-.4h-2.5c-.3 0-.5.3-.4.6l3.7 5.4-1.7 2.6c-.1.3.1.6.4.6h2.5c.2 0 .5-.1.6-.4l4.6-8.2c.2-.3 0-.6-.3-.6h-.2Z"
+        fill="#001C64"
+      />
+    </Svg>
+  );
+}
+
 function RoundBtn({ onPress, children }: { onPress: () => void; children: ReactNode }) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.roundBtn, pressed && styles.pressed]}>
@@ -169,22 +315,46 @@ function formatInr(amount: number): string {
   return `₹ ${amount.toLocaleString('en-IN')}`;
 }
 
-function StepProgress({ step }: { step: CheckoutStep }) {
+function StepProgress({
+  step,
+  onSelect,
+  enabled,
+}: {
+  step: CheckoutStep;
+  onSelect: (next: CheckoutStep) => void;
+  enabled: boolean;
+}) {
   return (
     <View style={styles.stepRow}>
       {STEPS.map((label, i) => {
         const active = i === step;
         const done = i < step;
+        const reachable = enabled;
         return (
-          <View key={label} style={styles.stepItem}>
+          <Pressable
+            key={label}
+            disabled={!reachable || active}
+            onPress={() => onSelect(i as CheckoutStep)}
+            style={({ pressed }) => [
+              styles.stepItem,
+              pressed && reachable && !active && styles.pressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityState={{ selected: active, disabled: !reachable || active }}
+            accessibilityLabel={`Go to ${label}`}
+          >
             <View style={[styles.stepDot, (active || done) && styles.stepDotOn]}>
-              {done ? <CheckIcon /> : <Text style={[styles.stepNum, active && styles.stepNumOn]}>{i + 1}</Text>}
+              {done ? (
+                <CheckIcon />
+              ) : (
+                <Text style={[styles.stepNum, active && styles.stepNumOn]}>{i + 1}</Text>
+              )}
             </View>
             <Text style={[styles.stepLabel, (active || done) && styles.stepLabelOn]} numberOfLines={1}>
               {label}
             </Text>
             {i < STEPS.length - 1 ? <View style={[styles.stepLine, done && styles.stepLineOn]} /> : null}
-          </View>
+          </Pressable>
         );
       })}
     </View>
@@ -244,12 +414,18 @@ export function CheckoutScreen({
   const insets = useSafeAreaInsets();
   const [step, setStep] = useState<CheckoutStep>(0);
   const [shipping, setShipping] = useState<'home' | 'pickup'>('home');
-  const [fullName, setFullName] = useState('Alex Morgan');
-  const [phone, setPhone] = useState('+91 98765 43210');
-  const [address, setAddress] = useState('12 Palm Grove, Bandra West');
-  const [city, setCity] = useState('Mumbai, 400050');
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>(INITIAL_ADDRESSES);
+  const [selectedAddressId, setSelectedAddressId] = useState(INITIAL_ADDRESSES[0].id);
+  const [addingAddress, setAddingAddress] = useState(false);
+  const [newLabel, setNewLabel] = useState('Other');
+  const [newName, setNewName] = useState('');
+  const [newPhone, setNewPhone] = useState('');
+  const [newLine1, setNewLine1] = useState('');
+  const [newLine2, setNewLine2] = useState('');
+  const [pickupName, setPickupName] = useState('Alex Morgan');
+  const [pickupPhone, setPickupPhone] = useState('+91 98765 43210');
   const [cardId, setCardId] = useState(CARDS[0].id);
-  const [payExtra, setPayExtra] = useState<'gpay' | 'apple' | 'paypal' | null>(null);
+  const [payExtra, setPayExtra] = useState<'gpay' | 'apple' | 'paypal' | 'cod' | null>(null);
   const [couponCode, setCouponCode] = useState('');
   const [appliedVoucherId, setAppliedVoucherId] = useState<string | null>(null);
   const [couponMessage, setCouponMessage] = useState<string | null>(null);
@@ -260,6 +436,9 @@ export function CheckoutScreen({
     [items],
   );
 
+  const selectedAddress =
+    savedAddresses.find((a) => a.id === selectedAddressId) ?? savedAddresses[0] ?? null;
+
   const appliedVoucher = VOUCHERS.find((v) => v.id === appliedVoucherId) ?? null;
   const discount = appliedVoucher
     ? Math.round((subtotal * appliedVoucher.discountPercent) / 100)
@@ -269,12 +448,14 @@ export function CheckoutScreen({
   const selectedCard = CARDS.find((c) => c.id === cardId);
   const payLabel = payExtra
     ? payExtra === 'gpay'
-      ? 'G Pay'
+      ? 'Google Pay'
       : payExtra === 'apple'
         ? 'Apple Pay'
-        : 'PayPal'
+        : payExtra === 'paypal'
+          ? 'PayPal'
+          : 'Cash on Delivery'
     : selectedCard
-      ? `${selectedCard.brand} •••• ${selectedCard.last4}`
+      ? `${selectedCard.brand === 'visa' ? 'Visa' : 'Mastercard'} •••• ${selectedCard.last4}`
       : 'Card';
 
   const titles: Record<CheckoutStep, string> = {
@@ -291,23 +472,57 @@ export function CheckoutScreen({
     3: 'FINALIZE PURCHASE',
   };
 
+  const newAddressValid =
+    newName.trim().length > 1 &&
+    newPhone.trim().length > 5 &&
+    newLine1.trim().length > 3 &&
+    newLine2.trim().length > 2;
+
   const canContinue =
     items.length > 0 &&
     (step !== 1 ||
       (shipping === 'pickup'
-        ? fullName.trim().length > 1 && phone.trim().length > 5
-        : fullName.trim().length > 1 &&
-          phone.trim().length > 5 &&
-          address.trim().length > 3 &&
-          city.trim().length > 2));
+        ? pickupName.trim().length > 1 && pickupPhone.trim().length > 5
+        : addingAddress
+          ? newAddressValid
+          : !!selectedAddress));
 
   const handleBack = () => {
+    if (step === 1 && addingAddress) {
+      setAddingAddress(false);
+      return;
+    }
     if (step === 0) onBack();
     else setStep((s) => (s - 1) as CheckoutStep);
   };
 
+  const saveNewAddress = () => {
+    if (!newAddressValid) return;
+    const id = `a${Date.now()}`;
+    const next: SavedAddress = {
+      id,
+      label: newLabel.trim() || 'Other',
+      name: newName.trim(),
+      phone: newPhone.trim(),
+      line1: newLine1.trim(),
+      line2: newLine2.trim(),
+    };
+    setSavedAddresses((prev) => [...prev, next]);
+    setSelectedAddressId(id);
+    setAddingAddress(false);
+    setNewLabel('Other');
+    setNewName('');
+    setNewPhone('');
+    setNewLine1('');
+    setNewLine2('');
+  };
+
   const handlePrimary = () => {
     if (!canContinue) return;
+    if (step === 1 && shipping === 'home' && addingAddress) {
+      saveNewAddress();
+      return;
+    }
     if (step < 3) setStep((s) => (s + 1) as CheckoutStep);
     else onFinalize?.();
   };
@@ -354,7 +569,14 @@ export function CheckoutScreen({
         <View style={styles.topSpacer} />
       </View>
 
-      <StepProgress step={step} />
+      <StepProgress
+        step={step}
+        enabled={items.length > 0}
+        onSelect={(next) => {
+          setAddingAddress(false);
+          setStep(next);
+        }}
+      />
 
       <ScrollView
         style={styles.scroll}
@@ -431,7 +653,10 @@ export function CheckoutScreen({
             <Text style={styles.sectionLabel}>Shipping method</Text>
             <View style={styles.shipToggle}>
               <Pressable
-                onPress={() => setShipping('home')}
+                onPress={() => {
+                  setShipping('home');
+                  setAddingAddress(false);
+                }}
                 style={[styles.shipOption, shipping === 'home' && styles.shipOptionActive]}
               >
                 <Text style={[styles.shipOptionText, shipping === 'home' && styles.shipOptionTextActive]}>
@@ -439,7 +664,11 @@ export function CheckoutScreen({
                 </Text>
               </Pressable>
               <Pressable
-                onPress={() => setShipping('pickup')}
+                onPress={() => {
+                  setShipping('pickup');
+                  setAddingAddress(false);
+                  if (payExtra === 'cod') setPayExtra(null);
+                }}
                 style={[styles.shipOption, shipping === 'pickup' && styles.shipOptionActive]}
               >
                 <Text style={[styles.shipOptionText, shipping === 'pickup' && styles.shipOptionTextActive]}>
@@ -448,58 +677,141 @@ export function CheckoutScreen({
               </Pressable>
             </View>
 
-            <Text style={styles.sectionLabel}>Contact</Text>
-            <TextInput
-              value={fullName}
-              onChangeText={setFullName}
-              placeholder="Full name"
-              placeholderTextColor={MUTED}
-              style={styles.field}
-              {...(Platform.OS === 'web'
-                ? ({ outlineStyle: 'none', outlineWidth: 0 } as object)
-                : null)}
-            />
-            <TextInput
-              value={phone}
-              onChangeText={setPhone}
-              placeholder="Phone number"
-              placeholderTextColor={MUTED}
-              keyboardType="phone-pad"
-              style={styles.field}
-              {...(Platform.OS === 'web'
-                ? ({ outlineStyle: 'none', outlineWidth: 0 } as object)
-                : null)}
-            />
-
             {shipping === 'home' ? (
-              <>
-                <Text style={styles.sectionLabel}>Delivery address</Text>
-                <TextInput
-                  value={address}
-                  onChangeText={setAddress}
-                  placeholder="Street address"
-                  placeholderTextColor={MUTED}
-                  style={styles.field}
-                  {...(Platform.OS === 'web'
-                    ? ({ outlineStyle: 'none', outlineWidth: 0 } as object)
-                    : null)}
-                />
-                <TextInput
-                  value={city}
-                  onChangeText={setCity}
-                  placeholder="City, PIN"
-                  placeholderTextColor={MUTED}
-                  style={styles.field}
-                  {...(Platform.OS === 'web'
-                    ? ({ outlineStyle: 'none', outlineWidth: 0 } as object)
-                    : null)}
-                />
-              </>
+              addingAddress ? (
+                <>
+                  <Text style={styles.sectionLabel}>Add new address</Text>
+                  <View style={styles.labelChips}>
+                    {['Home', 'Office', 'Other'].map((label) => (
+                      <Pressable
+                        key={label}
+                        onPress={() => setNewLabel(label)}
+                        style={[styles.labelChip, newLabel === label && styles.labelChipActive]}
+                      >
+                        <Text
+                          style={[
+                            styles.labelChipText,
+                            newLabel === label && styles.labelChipTextActive,
+                          ]}
+                        >
+                          {label}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                  <TextInput
+                    value={newName}
+                    onChangeText={setNewName}
+                    placeholder="Full name"
+                    placeholderTextColor={MUTED}
+                    style={styles.field}
+                    {...(Platform.OS === 'web'
+                      ? ({ outlineStyle: 'none', outlineWidth: 0 } as object)
+                      : null)}
+                  />
+                  <TextInput
+                    value={newPhone}
+                    onChangeText={setNewPhone}
+                    placeholder="Phone number"
+                    placeholderTextColor={MUTED}
+                    keyboardType="phone-pad"
+                    style={styles.field}
+                    {...(Platform.OS === 'web'
+                      ? ({ outlineStyle: 'none', outlineWidth: 0 } as object)
+                      : null)}
+                  />
+                  <TextInput
+                    value={newLine1}
+                    onChangeText={setNewLine1}
+                    placeholder="Street address, apartment"
+                    placeholderTextColor={MUTED}
+                    style={styles.field}
+                    {...(Platform.OS === 'web'
+                      ? ({ outlineStyle: 'none', outlineWidth: 0 } as object)
+                      : null)}
+                  />
+                  <TextInput
+                    value={newLine2}
+                    onChangeText={setNewLine2}
+                    placeholder="City, PIN"
+                    placeholderTextColor={MUTED}
+                    style={styles.field}
+                    {...(Platform.OS === 'web'
+                      ? ({ outlineStyle: 'none', outlineWidth: 0 } as object)
+                      : null)}
+                  />
+                </>
+              ) : (
+                <>
+                  <Text style={styles.sectionLabel}>Delivery address</Text>
+                  {savedAddresses.map((addr) => {
+                    const active = selectedAddressId === addr.id;
+                    return (
+                      <Pressable
+                        key={addr.id}
+                        onPress={() => setSelectedAddressId(addr.id)}
+                        style={[styles.addressCard, active && styles.addressCardActive]}
+                      >
+                        <View style={[styles.addressRadio, active && styles.addressRadioActive]}>
+                          {active ? <View style={styles.addressRadioDot} /> : null}
+                        </View>
+                        <View style={styles.addressCopy}>
+                          <View style={styles.addressLabelRow}>
+                            <Text style={styles.addressLabel}>{addr.label}</Text>
+                            {active ? (
+                              <View style={styles.addressSelectedPill}>
+                                <Text style={styles.addressSelectedText}>Selected</Text>
+                              </View>
+                            ) : null}
+                          </View>
+                          <Text style={styles.addressName}>{addr.name}</Text>
+                          <Text style={styles.addressPhone}>{addr.phone}</Text>
+                          <Text style={styles.addressLines}>
+                            {addr.line1}
+                            {'\n'}
+                            {addr.line2}
+                          </Text>
+                        </View>
+                      </Pressable>
+                    );
+                  })}
+                  <Pressable
+                    onPress={() => setAddingAddress(true)}
+                    style={({ pressed }) => [styles.addAddressBtn, pressed && styles.pressed]}
+                  >
+                    <Text style={styles.addAddressText}>+ Add new address</Text>
+                  </Pressable>
+                </>
+              )
             ) : (
-              <View style={styles.pickupBox}>
-                <Text style={styles.pickupTitle}>Givit Store · Bandra</Text>
-                <Text style={styles.pickupSub}>Ready in 2–4 hours · Free pickup</Text>
-              </View>
+              <>
+                <Text style={styles.sectionLabel}>Contact for pickup</Text>
+                <TextInput
+                  value={pickupName}
+                  onChangeText={setPickupName}
+                  placeholder="Full name"
+                  placeholderTextColor={MUTED}
+                  style={styles.field}
+                  {...(Platform.OS === 'web'
+                    ? ({ outlineStyle: 'none', outlineWidth: 0 } as object)
+                    : null)}
+                />
+                <TextInput
+                  value={pickupPhone}
+                  onChangeText={setPickupPhone}
+                  placeholder="Phone number"
+                  placeholderTextColor={MUTED}
+                  keyboardType="phone-pad"
+                  style={styles.field}
+                  {...(Platform.OS === 'web'
+                    ? ({ outlineStyle: 'none', outlineWidth: 0 } as object)
+                    : null)}
+                />
+                <View style={styles.pickupBox}>
+                  <Text style={styles.pickupTitle}>Givit Store · Bandra</Text>
+                  <Text style={styles.pickupSub}>Ready in 2–4 hours · Free pickup</Text>
+                </View>
+              </>
             )}
           </>
         ) : null}
@@ -522,14 +834,30 @@ export function CheckoutScreen({
                       end={{ x: 1, y: 1 }}
                       style={[styles.payCard, active && styles.payCardActive]}
                     >
+                      <View style={styles.payCardShine} />
                       {active ? (
                         <View style={styles.payCardCheck}>
                           <CheckIcon />
                         </View>
                       ) : null}
-                      <Text style={styles.payBrand}>{card.brand}</Text>
-                      <Text style={styles.payNumber}>**** **** **** {card.last4}</Text>
-                      <Text style={styles.payExpiry}>{card.expiry}</Text>
+                      <View style={styles.payCardTop}>
+                        <ChipIcon />
+                        <ContactlessIcon />
+                      </View>
+                      <Text style={styles.payNumber}>••••  ••••  ••••  {card.last4}</Text>
+                      <View style={styles.payCardBottom}>
+                        <View style={styles.payCardMeta}>
+                          <Text style={styles.payMetaLabel}>CARD HOLDER</Text>
+                          <Text style={styles.payHolder}>{card.holder}</Text>
+                        </View>
+                        <View style={styles.payCardMeta}>
+                          <Text style={styles.payMetaLabel}>EXPIRES</Text>
+                          <Text style={styles.payExpiry}>{card.expiry}</Text>
+                        </View>
+                        <View style={styles.payBrandWrap}>
+                          {card.brand === 'visa' ? <VisaLogo /> : <MastercardLogo />}
+                        </View>
+                      </View>
                     </LinearGradient>
                   </Pressable>
                 );
@@ -539,9 +867,9 @@ export function CheckoutScreen({
             <View style={styles.walletRow}>
               {(
                 [
-                  { id: 'gpay' as const, label: 'G Pay' },
-                  { id: 'apple' as const, label: 'Apple Pay' },
-                  { id: 'paypal' as const, label: 'PayPal' },
+                  { id: 'gpay' as const, label: 'Google Pay', Logo: GooglePayLogo },
+                  { id: 'apple' as const, label: 'Apple Pay', Logo: ApplePayLogo },
+                  { id: 'paypal' as const, label: 'PayPal', Logo: PayPalLogo },
                 ]
               ).map((w) => {
                 const active = payExtra === w.id;
@@ -550,12 +878,34 @@ export function CheckoutScreen({
                     key={w.id}
                     onPress={() => setPayExtra(active ? null : w.id)}
                     style={[styles.walletBtn, active && styles.walletBtnActive]}
+                    accessibilityRole="button"
+                    accessibilityLabel={w.label}
                   >
-                    <Text style={[styles.walletText, active && styles.walletTextActive]}>{w.label}</Text>
+                    <w.Logo />
                   </Pressable>
                 );
               })}
             </View>
+
+            {shipping === 'home' ? (
+              <Pressable
+                onPress={() => setPayExtra(payExtra === 'cod' ? null : 'cod')}
+                style={[styles.codCard, payExtra === 'cod' && styles.codCardActive]}
+                accessibilityRole="button"
+                accessibilityLabel="Cash on Delivery"
+              >
+                <View style={[styles.codRadio, payExtra === 'cod' && styles.codRadioActive]}>
+                  {payExtra === 'cod' ? <View style={styles.codRadioDot} /> : null}
+                </View>
+                <View style={styles.codCopy}>
+                  <Text style={styles.codTitle}>Cash on Delivery</Text>
+                  <Text style={styles.codSub}>Pay with cash when your gift arrives</Text>
+                </View>
+                <View style={styles.codBadge}>
+                  <Text style={styles.codBadgeText}>Home only</Text>
+                </View>
+              </Pressable>
+            ) : null}
 
             <Text style={styles.vouchersHeading}>Active Vouchers</Text>
             <View style={styles.couponRow}>
@@ -636,13 +986,22 @@ export function CheckoutScreen({
               <Text style={styles.reviewLine}>
                 {shipping === 'home' ? 'Home delivery' : 'Pick up in store'}
               </Text>
-              <Text style={styles.reviewMuted}>{fullName} · {phone}</Text>
-              {shipping === 'home' ? (
-                <Text style={styles.reviewMuted}>
-                  {address}, {city}
-                </Text>
+              {shipping === 'home' && selectedAddress ? (
+                <>
+                  <Text style={styles.reviewMuted}>
+                    {selectedAddress.label} · {selectedAddress.name} · {selectedAddress.phone}
+                  </Text>
+                  <Text style={styles.reviewMuted}>
+                    {selectedAddress.line1}, {selectedAddress.line2}
+                  </Text>
+                </>
               ) : (
-                <Text style={styles.reviewMuted}>Givit Store · Bandra</Text>
+                <>
+                  <Text style={styles.reviewMuted}>
+                    {pickupName} · {pickupPhone}
+                  </Text>
+                  <Text style={styles.reviewMuted}>Givit Store · Bandra</Text>
+                </>
               )}
             </View>
 
@@ -695,7 +1054,11 @@ export function CheckoutScreen({
             pressed && canContinue && styles.pressed,
           ]}
         >
-          <Text style={styles.finalizeText}>{footerLabel[step]}</Text>
+          <Text style={styles.finalizeText}>
+            {step === 1 && shipping === 'home' && addingAddress
+              ? 'SAVE ADDRESS'
+              : footerLabel[step]}
+          </Text>
         </Pressable>
       </View>
     </View>
@@ -974,21 +1337,158 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: MUTED,
   },
-  cardsRow: {
+  addressCard: {
+    flexDirection: 'row',
     gap: 12,
-    paddingRight: 8,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#E4E4EA',
+    backgroundColor: '#FFFFFF',
+    marginBottom: 10,
+  },
+  addressCardActive: {
+    borderColor: BLUE,
+    backgroundColor: 'rgba(0, 76, 255, 0.04)',
+  },
+  addressRadio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#C8C8D0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  addressRadioActive: {
+    borderColor: BLUE,
+  },
+  addressRadioDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: BLUE,
+  },
+  addressCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+  addressLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
+  addressLabel: {
+    fontFamily: fonts.semiBold,
+    fontSize: 14,
+    color: BLUE,
+  },
+  addressSelectedPill: {
+    backgroundColor: 'rgba(0, 76, 255, 0.1)',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  addressSelectedText: {
+    fontFamily: fonts.medium,
+    fontSize: 10,
+    color: BLUE,
+  },
+  addressName: {
+    fontFamily: fonts.semiBold,
+    fontSize: 15,
+    color: TEXT,
+  },
+  addressPhone: {
+    fontFamily: fonts.regular,
+    fontSize: 13,
+    color: MUTED,
+    marginTop: 2,
+    marginBottom: 6,
+  },
+  addressLines: {
+    fontFamily: fonts.regular,
+    fontSize: 13,
+    color: TEXT,
+    lineHeight: 18,
+  },
+  addAddressBtn: {
+    height: 46,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: BLUE,
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  addAddressText: {
+    fontFamily: fonts.semiBold,
+    fontSize: 14,
+    color: BLUE,
+  },
+  labelChips: {
+    flexDirection: 'row',
+    gap: 8,
     marginBottom: 12,
   },
+  labelChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: FIELD,
+  },
+  labelChipActive: {
+    backgroundColor: 'rgba(0, 76, 255, 0.12)',
+  },
+  labelChipText: {
+    fontFamily: fonts.medium,
+    fontSize: 13,
+    color: MUTED,
+  },
+  labelChipTextActive: {
+    color: BLUE,
+    fontFamily: fonts.semiBold,
+  },
+  cardsRow: {
+    gap: 14,
+    paddingRight: 8,
+    paddingVertical: 4,
+    marginBottom: 14,
+  },
   payCard: {
-    width: 210,
-    height: 118,
+    width: 268,
+    height: 158,
     borderRadius: 18,
-    padding: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
     justifyContent: 'space-between',
+    overflow: 'hidden',
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: '0 12px 28px rgba(15, 23, 42, 0.22)' } as object)
+      : {
+          shadowColor: '#0F172A',
+          shadowOpacity: 0.22,
+          shadowRadius: 16,
+          shadowOffset: { width: 0, height: 8 },
+          elevation: 6,
+        }),
+  },
+  payCardShine: {
+    position: 'absolute',
+    top: -40,
+    right: -30,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(255,255,255,0.10)',
   },
   payCardActive: {
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.55)',
+    borderColor: 'rgba(255,255,255,0.7)',
   },
   payCardCheck: {
     position: 'absolute',
@@ -1000,22 +1500,51 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.28)',
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 2,
   },
-  payBrand: {
-    fontFamily: fonts.bold,
-    fontSize: 16,
-    color: '#FFFFFF',
-    letterSpacing: 1,
+  payCardTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   payNumber: {
+    fontFamily: fonts.semiBold,
+    fontSize: 17,
+    letterSpacing: 1.4,
+    color: '#FFFFFF',
+    marginTop: 8,
+  },
+  payCardBottom: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  payCardMeta: {
+    flexShrink: 1,
+  },
+  payMetaLabel: {
     fontFamily: fonts.medium,
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.92)',
+    fontSize: 8,
+    letterSpacing: 0.8,
+    color: 'rgba(255,255,255,0.65)',
+    marginBottom: 2,
+  },
+  payHolder: {
+    fontFamily: fonts.semiBold,
+    fontSize: 11,
+    color: '#FFFFFF',
+    letterSpacing: 0.4,
   },
   payExpiry: {
-    fontFamily: fonts.regular,
+    fontFamily: fonts.semiBold,
     fontSize: 12,
-    color: 'rgba(255,255,255,0.8)',
+    color: '#FFFFFF',
+  },
+  payBrandWrap: {
+    marginLeft: 'auto',
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
   },
   walletRow: {
     flexDirection: 'row',
@@ -1024,25 +1553,77 @@ const styles = StyleSheet.create({
   },
   walletBtn: {
     flex: 1,
-    height: 44,
+    height: 52,
     borderRadius: 12,
     borderWidth: 1.5,
     borderColor: '#E4E4EA',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
+    paddingHorizontal: 6,
   },
   walletBtnActive: {
     borderColor: BLUE,
     backgroundColor: 'rgba(0, 76, 255, 0.06)',
   },
-  walletText: {
-    fontFamily: fonts.semiBold,
-    fontSize: 13,
-    color: TEXT,
+  codCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#E4E4EA',
+    backgroundColor: '#FFFFFF',
+    marginBottom: 20,
   },
-  walletTextActive: {
-    color: BLUE,
+  codCardActive: {
+    borderColor: BLUE,
+    backgroundColor: 'rgba(0, 76, 255, 0.04)',
+  },
+  codRadio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#C8C8D0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  codRadioActive: {
+    borderColor: BLUE,
+  },
+  codRadioDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: BLUE,
+  },
+  codCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+  codTitle: {
+    fontFamily: fonts.semiBold,
+    fontSize: 15,
+    color: TEXT,
+    marginBottom: 2,
+  },
+  codSub: {
+    fontFamily: fonts.regular,
+    fontSize: 12,
+    color: MUTED,
+  },
+  codBadge: {
+    backgroundColor: FIELD,
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  codBadgeText: {
+    fontFamily: fonts.medium,
+    fontSize: 10,
+    color: MUTED,
   },
   vouchersHeading: {
     fontFamily: fonts.bold,
