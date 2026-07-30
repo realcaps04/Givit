@@ -31,13 +31,13 @@ export function WelcomeScreen({ onGetStarted, onHaveAccount }: WelcomeScreenProp
       style={[
         styles.root,
         {
-          paddingTop: Math.max(insets.top, 12) + 8,
-          paddingBottom: Math.max(insets.bottom, 16),
+          paddingTop: Math.max(insets.top, 12) + 4,
+          paddingBottom: Math.max(insets.bottom, 12) + 36,
         },
       ]}
     >
       <View style={styles.topBlock}>
-        <GiftLogo size={88} />
+        <GiftLogo size={72} />
         <Text style={[styles.title, titleWeight]}>Givit</Text>
         <Text style={styles.subtitle}>
           Beautiful gifts for every{'\n'}
@@ -83,16 +83,16 @@ const styles = StyleSheet.create({
     paddingTop: 28,
   },
   title: {
-    marginTop: 16,
+    marginTop: 12,
     fontFamily: fonts.display,
-    fontSize: 34,
-    lineHeight: 40,
+    fontSize: 32,
+    lineHeight: 38,
     letterSpacing: 0.2,
     color: TITLE,
     textAlign: 'center',
   },
   subtitle: {
-    marginTop: 8,
+    marginTop: 6,
     fontFamily: fonts.regular,
     fontSize: 15,
     lineHeight: 22,
@@ -102,8 +102,8 @@ const styles = StyleSheet.create({
   },
   bottomBlock: {
     width: '100%',
-    paddingBottom: 12,
-    gap: 16,
+    gap: 14,
+    paddingBottom: 8,
   },
   cta: {
     height: 52,
