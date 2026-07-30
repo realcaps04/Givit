@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, StyleSheet, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import {
@@ -79,6 +79,10 @@ export default function App() {
           <CreateAccountScreen
             onDone={() => setRoute('welcome')}
             onCancel={() => setRoute('welcome')}
+            onSkip={() => setRoute('welcome')}
+            onGoogle={() => {
+              Alert.alert('Google', 'Google sign-in will be available soon.');
+            }}
           />
         )}
         {route === 'login' && (
